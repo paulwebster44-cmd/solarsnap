@@ -1,6 +1,6 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
-import { SuitabilityResult } from './solar';
+import { SuitabilityResult, ObstructionAnalysis, SuitabilityVerdict } from './solar';
 
 /**
  * Defines every screen in the app and what parameters it receives.
@@ -18,8 +18,14 @@ export type RootStackParamList = {
     tilt: number;
     latitude: number;
     longitude: number;
-    /** Local URI of the sky photo taken at assessment time. Used in Milestone 3 for image analysis. */
+    /** Local URI of the sky photo taken at assessment time */
     photoUri?: string;
+    /** Sky obstruction analysis from Hugging Face (undefined if analysis failed or was skipped) */
+    obstruction?: ObstructionAnalysis;
+    /** Score after applying obstruction penalty (undefined if no obstruction data) */
+    adjustedScore?: number;
+    /** Verdict after applying obstruction penalty */
+    adjustedVerdict?: SuitabilityVerdict;
   };
 };
 

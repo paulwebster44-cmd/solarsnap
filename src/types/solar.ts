@@ -27,3 +27,29 @@ export interface SuitabilityResult {
 /** Verdict thresholds (energy-weighted % of annual solar potential):
  *  Excellent ≥65% | Good ≥50% | Fair ≥30% | Poor <30% */
 export type SuitabilityVerdict = 'Excellent' | 'Good' | 'Fair' | 'Poor';
+
+/**
+ * Result of the sky photo obstruction analysis (Milestone 3).
+ */
+export interface ObstructionAnalysis {
+  /** Centre-weighted % of the panel's sky arc that is unobstructed */
+  skyPercentage: number;
+  /** Centre-weighted % that is obstructed */
+  obstructionPercentage: number;
+  /** Obstruction labels detected (e.g. ["Tree", "Building"]) */
+  detectedObstructions: string[];
+  /** True if sky coverage 40–60% — a second photo is recommended */
+  isBorderline: boolean;
+}
+
+/**
+ * The final combined result after applying the obstruction penalty.
+ */
+export interface FinalAssessment {
+  solarResult: SuitabilityResult;
+  obstruction: ObstructionAnalysis;
+  /** Suitability score after obstruction penalty */
+  adjustedScore: number;
+  /** Verdict based on the adjusted score */
+  adjustedVerdict: SuitabilityVerdict;
+}
