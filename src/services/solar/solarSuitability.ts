@@ -26,7 +26,7 @@ function bearingDifference(a: number, b: number): number {
  * Thresholds are based on typical plug-in solar performance expectations.
  */
 function getVerdict(percentage: number): SuitabilityVerdict {
-  if (percentage >= 70) return 'Excellent';
+  if (percentage >= 65) return 'Excellent';
   if (percentage >= 50) return 'Good';
   if (percentage >= 30) return 'Fair';
   return 'Poor';
@@ -67,11 +67,17 @@ function calculateDaylightPercentage(
 
     // Only count moments when the sun is above the horizon
     if (position.altitude > 0) {
-      totalDaylightSlots++;
+      // Energy weight: sin(altitude) is a standard proxy for solar irradiance.
+      // A sun at 60° altitude carries roughly 3× more usable energy than one at 15°
+      // (shorter atmospheric path, higher beam intensity). This means a south-facing
+      // panel scores well because the high-energy midday hours are always in its FOV,
+      // even though it misses some low-energy early-morning/late-evening hours.
+      const energyWeight = Math.sin(position.altitude * (Math.PI / 180));
+      totalDaylightSlots += energyWeight;
 
       // Check if the sun's azimuth is within ±60° of the panel's facing direction
       if (bearingDifference(position.azimuth, panelBearing) <= PANEL_FOV_DEG) {
-        inViewSlots++;
+        inViewSlots += energyWeight;
       }
     }
   }

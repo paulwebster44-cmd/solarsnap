@@ -12,7 +12,9 @@ export interface SolarPosition {
  * The result of a full suitability assessment for a proposed panel location.
  */
 export interface SuitabilityResult {
-  /** Percentage of annual daylight hours during which the sun is within the panel's FOV */
+  /** Percentage of annual solar energy potential captured within the panel's FOV.
+   *  Weighted by sin(altitude) so high-energy midday hours count more than low-energy
+   *  morning/evening hours. More physically meaningful than a raw hour count. */
   annualDaylightPercentage: number;
   /** Human-readable verdict derived from annualDaylightPercentage */
   verdict: SuitabilityVerdict;
@@ -22,4 +24,6 @@ export interface SuitabilityResult {
   isSunInView: boolean;
 }
 
+/** Verdict thresholds (energy-weighted % of annual solar potential):
+ *  Excellent ≥65% | Good ≥50% | Fair ≥30% | Poor <30% */
 export type SuitabilityVerdict = 'Excellent' | 'Good' | 'Fair' | 'Poor';
