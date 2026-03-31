@@ -16,6 +16,7 @@ import {
   View,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { ResultsScreenNavProp, ResultsScreenRouteProp } from '../types/navigation';
 import { SuitabilityVerdict } from '../types/solar';
 
@@ -30,15 +31,6 @@ function verdictColour(verdict: SuitabilityVerdict): string {
   }
 }
 
-function verdictDescription(verdict: SuitabilityVerdict): string {
-  switch (verdict) {
-    case 'Excellent': return 'This location receives excellent sun exposure. A panel here should generate strong returns throughout the year.';
-    case 'Good':      return 'This location receives good sun exposure. A panel here should generate worthwhile returns for most of the year.';
-    case 'Fair':      return 'This location has moderate sun exposure. A panel here will generate some energy but may not reach full potential.';
-    case 'Poor':      return 'This location has limited sun exposure. A panel here is unlikely to generate meaningful energy.';
-  }
-}
-
 function bearingToLabel(b: number): string {
   return ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(b / 45) % 8];
 }
@@ -46,11 +38,11 @@ function bearingToLabel(b: number): string {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ResultsScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<ResultsScreenNavProp>();
   const { result, bearing, tilt, latitude, longitude, obstruction, adjustedScore, adjustedVerdict } =
     useRoute<ResultsScreenRouteProp>().params;
 
-  // Use adjusted verdict/score if obstruction data is available, otherwise use base
   const displayVerdict = adjustedVerdict ?? result.verdict;
   const displayScore   = adjustedScore   ?? result.annualDaylightPercentage;
   const colour = verdictColour(displayVerdict);
@@ -61,9 +53,9 @@ export default function ResultsScreen() {
 
       {/* ── Verdict header ── */}
       <View style={[s.header, { backgroundColor: colour }]}>
-        <Text style={s.headerLabel}>Solar Suitability</Text>
-        <Text style={s.verdictText}>{displayVerdict}</Text>
-        <Text style={s.scoreText}>{displayScore}% of annual solar energy potential</Text>
+        <Text style={s.headerLabel}>{t('results.solarSuitability')}</Text>
+        <Text style={s.verdictText}>{t(`results.verdict.${displayVerdict}` as any)}</Text>
+        <Text style={s.scoreText}>{t('results.annualScore', { score: displayScore })}</Text>
         <View style={s.progressTrack}>
           <View style={[s.progressFill, { width: `${displayScore}%` }]} />
         </View>
@@ -71,14 +63,15 @@ export default function ResultsScreen() {
 
       <ScrollView style={s.scroll} contentContainerStyle={s.scrollContent}>
 
-        <Text style={s.description}>{verdictDescription(displayVerdict)}</Text>
+        <Text style={s.description}>
+          {t(`results.verdict.description.${displayVerdict}` as any)}
+        </Text>
 
         {/* ── Obstruction analysis ── */}
         {hasObstruction ? (
           <View style={s.card}>
-            <Text style={s.cardTitle}>Sky Obstruction Analysis</Text>
+            <Text style={s.cardTitle}>{t('results.obstruction.title')}</Text>
 
-            {/* Sky vs obstruction bar */}
             <View style={s.obstructionBarRow}>
               <View style={[s.obstructionBarSky, { flex: obstruction.skyPercentage }]} />
               <View style={[s.obstructionBarBlocked, { flex: obstruction.obstructionPercentage }]} />
@@ -86,69 +79,76 @@ export default function ResultsScreen() {
             <View style={s.obstructionLegend}>
               <View style={s.legendItem}>
                 <View style={[s.legendDot, { backgroundColor: '#16a34a' }]} />
-                <Text style={s.legendText}>Sky: {obstruction.skyPercentage}%</Text>
+                <Text style={s.legendText}>{t('results.obstruction.sky', { pct: obstruction.skyPercentage })}</Text>
               </View>
               <View style={s.legendItem}>
                 <View style={[s.legendDot, { backgroundColor: '#dc2626' }]} />
-                <Text style={s.legendText}>Obstructed: {obstruction.obstructionPercentage}%</Text>
+                <Text style={s.legendText}>{t('results.obstruction.obstructed', { pct: obstruction.obstructionPercentage })}</Text>
               </View>
             </View>
 
             {obstruction.detectedObstructions.length > 0 && (
               <View style={s.row}>
-                <Text style={s.rowLabel}>Obstructions detected</Text>
+                <Text style={s.rowLabel}>{t('results.obstruction.detected')}</Text>
                 <Text style={s.rowValue}>{obstruction.detectedObstructions.join(', ')}</Text>
               </View>
             )}
 
-            {/* Score adjustment explanation */}
             {adjustedScore !== undefined && adjustedScore !== result.annualDaylightPercentage && (
               <View style={s.adjustmentNote}>
                 <Text style={s.adjustmentNoteText}>
-                  Base solar score: {result.annualDaylightPercentage}%
-                  {' → '}adjusted for obstructions: {adjustedScore}%
+                  {t('results.obstruction.adjustmentNote', {
+                    base: result.annualDaylightPercentage,
+                    adjusted: adjustedScore,
+                  })}
                 </Text>
               </View>
             )}
           </View>
         ) : (
           <View style={s.card}>
-            <Text style={s.cardTitle}>Sky Obstruction Analysis</Text>
-            <Text style={s.noAnalysisText}>
-              Obstruction analysis was not available for this assessment.
-              The score shown is based on solar position only.
-            </Text>
+            <Text style={s.cardTitle}>{t('results.obstruction.title')}</Text>
+            <Text style={s.noAnalysisText}>{t('results.obstruction.unavailable')}</Text>
           </View>
         )}
 
         {/* ── Panel orientation ── */}
         <View style={s.card}>
-          <Text style={s.cardTitle}>Panel Orientation</Text>
-          <Row label="Facing direction" value={`${bearing}° (${bearingToLabel(bearing)})`} />
-          <Row label="Tilt from vertical" value={`${tilt}°`} />
-          <Text style={s.tiltNote}>Tilt is captured for future analysis and not yet factored into the score.</Text>
+          <Text style={s.cardTitle}>{t('results.panel.title')}</Text>
+          <Row label={t('results.panel.facing')} value={`${bearing}° (${bearingToLabel(bearing)})`} />
+          <Row label={t('results.panel.tilt')} value={`${tilt}°`} />
+          <Text style={s.tiltNote}>{t('results.panel.tiltNote')}</Text>
         </View>
 
         {/* ── Current sun position ── */}
         <View style={s.card}>
-          <Text style={s.cardTitle}>Sun Right Now</Text>
+          <Text style={s.cardTitle}>{t('results.sun.title')}</Text>
           <Row
-            label="Azimuth (direction)"
+            label={t('results.sun.azimuth')}
             value={`${result.currentSolarPosition.azimuth}° (${bearingToLabel(result.currentSolarPosition.azimuth)})`}
           />
-          <Row label="Altitude (above horizon)" value={`${result.currentSolarPosition.altitude}°`} />
           <Row
-            label="In panel's field of view"
-            value={result.isSunInView ? 'Yes' : result.currentSolarPosition.altitude <= 0 ? 'No — below horizon' : 'No — outside panel arc'}
+            label={t('results.sun.altitude')}
+            value={`${result.currentSolarPosition.altitude}°`}
+          />
+          <Row
+            label={t('results.sun.inView')}
+            value={
+              result.isSunInView
+                ? t('results.sun.yes')
+                : result.currentSolarPosition.altitude <= 0
+                  ? t('results.sun.belowHorizon')
+                  : t('results.sun.outsideArc')
+            }
             valueColour={result.isSunInView ? '#16a34a' : '#dc2626'}
           />
         </View>
 
         {/* ── Location ── */}
         <View style={s.card}>
-          <Text style={s.cardTitle}>Location</Text>
-          <Row label="Latitude"  value={`${latitude.toFixed(5)}°`} />
-          <Row label="Longitude" value={`${longitude.toFixed(5)}°`} />
+          <Text style={s.cardTitle}>{t('results.location.title')}</Text>
+          <Row label={t('results.location.latitude')}  value={`${latitude.toFixed(5)}°`} />
+          <Row label={t('results.location.longitude')} value={`${longitude.toFixed(5)}°`} />
         </View>
 
       </ScrollView>
@@ -156,7 +156,7 @@ export default function ResultsScreen() {
       {/* ── Footer button ── */}
       <View style={s.footer}>
         <TouchableOpacity style={s.retryBtn} onPress={() => navigation.goBack()}>
-          <Text style={s.retryBtnText}>Assess Again</Text>
+          <Text style={s.retryBtnText}>{t('results.assessAgain')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -195,7 +195,6 @@ const s = StyleSheet.create({
   card: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
   cardTitle: { fontSize: 13, fontWeight: '700', color: '#6b7280', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12 },
 
-  // Obstruction bar
   obstructionBarRow: { flexDirection: 'row', height: 12, borderRadius: 6, overflow: 'hidden', marginBottom: 8 },
   obstructionBarSky: { backgroundColor: '#16a34a' },
   obstructionBarBlocked: { backgroundColor: '#dc2626' },

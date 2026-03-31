@@ -38,7 +38,9 @@
         {
           "locationWhenInUsePermission": "SolarSnap uses your location to calculate the sun's position at your site."
         }
-      ]
+      ],
+      "expo-secure-store",
+      "expo-localization"
     ]
   }
 }

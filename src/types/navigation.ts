@@ -2,19 +2,19 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { SuitabilityResult, ObstructionAnalysis, SuitabilityVerdict } from './solar';
 
-/**
- * Defines every screen in the app and what parameters it receives.
- * Any change to navigation structure should be reflected here first.
- */
-export type RootStackParamList = {
+export type AuthStackParamList = {
+  Login: undefined;
+  Register: undefined;
+};
+
+export type AppStackParamList = {
   Home: undefined;
   Assessment: undefined;
   Results: {
     result: SuitabilityResult;
     /** Compass bearing the phone was pointing when the user tapped Assess (degrees from north) */
     bearing: number;
-    /** Approximate panel tilt angle in degrees (0° = vertical wall mount, 90° = flat/horizontal).
-     *  Captured for future use — not yet factored into the suitability calculation. */
+    /** Approximate panel tilt angle in degrees (0° = vertical wall mount, 90° = flat/horizontal) */
     tilt: number;
     latitude: number;
     longitude: number;
@@ -27,9 +27,14 @@ export type RootStackParamList = {
     /** Verdict after applying obstruction penalty */
     adjustedVerdict?: SuitabilityVerdict;
   };
+  SetHomeLocation: undefined;
+  Account: undefined;
 };
 
-export type HomeScreenNavProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
-export type AssessmentScreenNavProp = NativeStackNavigationProp<RootStackParamList, 'Assessment'>;
-export type ResultsScreenNavProp = NativeStackNavigationProp<RootStackParamList, 'Results'>;
-export type ResultsScreenRouteProp = RouteProp<RootStackParamList, 'Results'>;
+// Backward-compat alias used by existing screens
+export type RootStackParamList = AppStackParamList;
+
+export type HomeScreenNavProp = NativeStackNavigationProp<AppStackParamList, 'Home'>;
+export type AssessmentScreenNavProp = NativeStackNavigationProp<AppStackParamList, 'Assessment'>;
+export type ResultsScreenNavProp = NativeStackNavigationProp<AppStackParamList, 'Results'>;
+export type ResultsScreenRouteProp = RouteProp<AppStackParamList, 'Results'>;

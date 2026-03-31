@@ -5,16 +5,18 @@
  * toward the sky in the orientation the panel would be mounted, and taps Assess.
  *
  * Flow:
- *   1. Take photo + read GPS, compass bearing, tilt
- *   2. Calculate solar suitability (local, ~1–2 s)
- *   3. Send photo to Hugging Face for sky segmentation (~5–15 s)
- *   4. If sky coverage is borderline (40–60%), prompt user to try another angle
- *   5. Apply obstruction penalty and navigate to Results
+ *   1. Licence check: boundary (200m) + credit balance
+ *   2. Take photo + read GPS, compass bearing, tilt
+ *   3. Calculate solar suitability (local, ~1–2 s)
+ *   4. Send photo to Hugging Face for sky segmentation (~5–15 s)
+ *   5. If sky coverage is borderline (40–60%), prompt user to try another angle
+ *   6. Apply obstruction penalty, deduct one credit, and navigate to Results
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Modal,
   Platform,
   StyleSheet,
@@ -26,10 +28,14 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Location from 'expo-location';
 import { Accelerometer } from 'expo-sensors';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 import { assessSuitability } from '../services/solar/solarSuitability';
 import { analyseSkyPhoto, HFModelLoadingError, ObstructionAnalysis } from '../services/analysis/skyAnalysis';
 import { applyObstructionPenalty, averageSkyPercentages } from '../services/analysis/obstructionPenalty';
+import { deductCredit } from '../services/auth/authService';
+import { checkBoundary, hasCredits } from '../services/auth/licenceCheck';
+import { useAuth } from '../contexts/AuthContext';
 import { AssessmentScreenNavProp } from '../types/navigation';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -47,7 +53,9 @@ function calcTilt(x: number, y: number, z: number): number {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function AssessmentScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<AssessmentScreenNavProp>();
+  const { profile, refreshProfile } = useAuth();
   const cameraRef = useRef<CameraView>(null);
 
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
@@ -55,9 +63,13 @@ export default function AssessmentScreen() {
   const [bearing, setBearing] = useState(0);
   const [tilt, setTilt] = useState(0);
 
-  // Multi-stage loading feedback
   const [loadingStage, setLoadingStage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Licence violation modals
+  const [showBoundaryModal, setShowBoundaryModal] = useState(false);
+  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
+  const [boundaryDistance, setBoundaryDistance] = useState(0);
 
   // Borderline photo retry state
   const [showBorderlinePrompt, setShowBorderlinePrompt] = useState(false);
@@ -92,7 +104,7 @@ export default function AssessmentScreen() {
     return () => { sub?.remove(); };
   }, [locationGranted]);
 
-  // ── Accelerometer (tilt) ──────────────────────────────────────────────────────
+  // ── Accelerometer (tilt) ─────────────────────────────────────────────────────
 
   useEffect(() => {
     Accelerometer.setUpdateInterval(200);
@@ -100,7 +112,7 @@ export default function AssessmentScreen() {
     return () => sub.remove();
   }, []);
 
-  // ── Core assess logic ────────────────────────────────────────────────────────
+  // ── Core analysis logic ──────────────────────────────────────────────────────
 
   const runAnalysis = useCallback(async (
     photoUri: string,
@@ -109,32 +121,31 @@ export default function AssessmentScreen() {
     previousSkyPct?: number,
   ) => {
     setErrorMessage(null);
-    setLoadingStage('Reading GPS location…');
+    setLoadingStage(t('assessment.stage.gps'));
 
     const location = await Location.getCurrentPositionAsync({
       accuracy: Location.Accuracy.High,
     });
     const { latitude, longitude } = location.coords;
 
-    setLoadingStage('Calculating solar position…');
-
-    // Solar suitability runs synchronously — yield to let the UI update first
+    setLoadingStage(t('assessment.stage.solar'));
     await new Promise((resolve) => setTimeout(resolve, 50));
     const solarResult = assessSuitability(latitude, longitude, snapBearing);
 
-    setLoadingStage('Analysing sky for obstructions…\n(this takes ~10 seconds)');
+    setLoadingStage(t('assessment.stage.sky'));
 
     let obstruction: ObstructionAnalysis;
     try {
       obstruction = await analyseSkyPhoto(photoUri);
     } catch (err) {
       if (err instanceof HFModelLoadingError) {
-        setLoadingStage(`Sky analysis model warming up…\nRetrying in ${err.estimatedSeconds}s`);
+        setLoadingStage(t('assessment.stage.warmingUp', { seconds: err.estimatedSeconds }));
         await new Promise((resolve) => setTimeout(resolve, err.estimatedSeconds * 1000));
         obstruction = await analyseSkyPhoto(photoUri);
       } else {
-        // If sky analysis fails entirely, proceed without it and note the issue
         setLoadingStage(null);
+        // Deduct credit even when sky analysis fails — solar result is still valid
+        try { await deductCredit(); await refreshProfile(); } catch { /* best-effort */ }
         navigation.navigate('Results', {
           result: solarResult,
           bearing: snapBearing,
@@ -142,13 +153,12 @@ export default function AssessmentScreen() {
           latitude,
           longitude,
           photoUri,
-          // No obstruction data — results screen will show a note
         });
         return;
       }
     }
 
-    // If borderline and this is the first photo, ask user to try another angle
+    // Borderline: ask user to try a second angle
     if (obstruction.isBorderline && previousSkyPct === undefined) {
       setPendingData({ bearing: snapBearing, tilt: snapTilt, latitude, longitude, photoUri, solarResult, obstruction });
       setFirstSkyPct(obstruction.skyPercentage);
@@ -157,7 +167,6 @@ export default function AssessmentScreen() {
       return;
     }
 
-    // Average with first photo if this is the second
     const finalSkyPct = previousSkyPct !== undefined
       ? averageSkyPercentages(previousSkyPct, obstruction.skyPercentage)
       : obstruction.skyPercentage;
@@ -167,6 +176,9 @@ export default function AssessmentScreen() {
       solarResult.annualDaylightPercentage,
       finalSkyPct,
     );
+
+    // Deduct credit on successful completion
+    try { await deductCredit(); await refreshProfile(); } catch { /* best-effort */ }
 
     setLoadingStage(null);
     navigation.navigate('Results', {
@@ -180,13 +192,32 @@ export default function AssessmentScreen() {
       adjustedScore,
       adjustedVerdict,
     });
-  }, [navigation]);
+  }, [navigation, t, refreshProfile]);
 
   // ── Assess button handler ────────────────────────────────────────────────────
 
   const handleAssess = useCallback(async () => {
-    setLoadingStage('Taking photo…');
     setErrorMessage(null);
+
+    // Licence checks before taking photo
+    if (profile) {
+      if (!hasCredits(profile)) {
+        setShowNoCreditsModal(true);
+        return;
+      }
+      // Quick GPS read for boundary check
+      try {
+        const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        const boundary = checkBoundary(pos.coords.latitude, pos.coords.longitude, profile);
+        if (!boundary.allowed) {
+          setBoundaryDistance(boundary.distance);
+          setShowBoundaryModal(true);
+          return;
+        }
+      } catch { /* if GPS fails here, proceed — runAnalysis will catch it properly */ }
+    }
+
+    setLoadingStage(t('assessment.stage.takingPhoto'));
 
     try {
       let photoUri: string | undefined;
@@ -196,21 +227,18 @@ export default function AssessmentScreen() {
       }
       if (!photoUri) throw new Error('Failed to capture photo.');
 
-      const snapBearing = bearing;
-      const snapTilt = tilt;
-
-      await runAnalysis(photoUri, snapBearing, snapTilt);
+      await runAnalysis(photoUri, bearing, tilt);
     } catch (err) {
       setLoadingStage(null);
-      setErrorMessage(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setErrorMessage(err instanceof Error ? err.message : t('common.error'));
     }
-  }, [bearing, tilt, runAnalysis]);
+  }, [bearing, tilt, profile, runAnalysis, t]);
 
-  // ── Borderline: user takes a second photo ────────────────────────────────────
+  // ── Borderline: second photo ─────────────────────────────────────────────────
 
   const handleSecondPhoto = useCallback(async () => {
     setShowBorderlinePrompt(false);
-    setLoadingStage('Taking second photo…');
+    setLoadingStage(t('assessment.stage.takingSecondPhoto'));
     setErrorMessage(null);
 
     try {
@@ -220,23 +248,23 @@ export default function AssessmentScreen() {
         photoUri = photo?.uri;
       }
       if (!photoUri || firstSkyPct === null) throw new Error('Failed to capture photo.');
-
       await runAnalysis(photoUri, bearing, tilt, firstSkyPct);
     } catch (err) {
       setLoadingStage(null);
-      setErrorMessage(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setErrorMessage(err instanceof Error ? err.message : t('common.error'));
     }
-  }, [bearing, tilt, firstSkyPct, runAnalysis]);
+  }, [bearing, tilt, firstSkyPct, runAnalysis, t]);
 
-  // ── Borderline: user skips second photo ─────────────────────────────────────
+  // ── Borderline: skip second photo ────────────────────────────────────────────
 
-  const handleUseFirstResult = useCallback(() => {
+  const handleUseFirstResult = useCallback(async () => {
     if (!pendingData) return;
     setShowBorderlinePrompt(false);
     const { adjustedScore, adjustedVerdict } = applyObstructionPenalty(
       pendingData.solarResult.annualDaylightPercentage,
       pendingData.obstruction.skyPercentage,
     );
+    try { await deductCredit(); await refreshProfile(); } catch { /* best-effort */ }
     navigation.navigate('Results', {
       result: pendingData.solarResult,
       bearing: pendingData.bearing,
@@ -248,7 +276,15 @@ export default function AssessmentScreen() {
       adjustedScore,
       adjustedVerdict,
     });
-  }, [pendingData, navigation]);
+  }, [pendingData, navigation, refreshProfile]);
+
+  // ── Licence modal actions ────────────────────────────────────────────────────
+
+  const handleUpgradePressed = () => {
+    setShowBoundaryModal(false);
+    setShowNoCreditsModal(false);
+    Alert.alert('', t('licence.upgradeComingSoon'));
+  };
 
   // ── Render: permission gates ─────────────────────────────────────────────────
 
@@ -258,9 +294,9 @@ export default function AssessmentScreen() {
   if (!cameraPermission.granted) {
     return (
       <View style={s.centred}>
-        <Text style={s.permText}>Camera access is required to assess solar potential.</Text>
+        <Text style={s.permText}>{t('assessment.cameraPermRequired')}</Text>
         <TouchableOpacity style={s.btn} onPress={requestCameraPermission}>
-          <Text style={s.btnText}>Grant Camera Access</Text>
+          <Text style={s.btnText}>{t('assessment.grantCamera')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -268,7 +304,7 @@ export default function AssessmentScreen() {
   if (!locationGranted) {
     return (
       <View style={s.centred}>
-        <Text style={s.permText}>Location access is required to calculate the sun's position.</Text>
+        <Text style={s.permText}>{t('assessment.locationPermRequired')}</Text>
       </View>
     );
   }
@@ -283,10 +319,7 @@ export default function AssessmentScreen() {
 
         {/* Instruction banner */}
         <View style={s.instructionBanner}>
-          <Text style={s.instructionText}>
-            Point at the sky in the direction your panel will face,
-            tilted to match the panel angle, then tap Assess.
-          </Text>
+          <Text style={s.instructionText}>{t('assessment.instruction')}</Text>
         </View>
 
         {/* Crosshair */}
@@ -298,15 +331,15 @@ export default function AssessmentScreen() {
         {/* Sensor readings */}
         <View style={s.readingsContainer}>
           <View style={s.readingBox}>
-            <Text style={s.readingLabel}>FACING</Text>
+            <Text style={s.readingLabel}>{t('assessment.facing')}</Text>
             <Text style={s.readingValue}>{bearing}°</Text>
             <Text style={s.readingUnit}>{bearingToLabel(bearing)}</Text>
           </View>
           <View style={s.readingDivider} />
           <View style={s.readingBox}>
-            <Text style={s.readingLabel}>TILT</Text>
+            <Text style={s.readingLabel}>{t('assessment.tilt')}</Text>
             <Text style={s.readingValue}>{tilt}°</Text>
-            <Text style={s.readingUnit}>from vertical</Text>
+            <Text style={s.readingUnit}>{t('assessment.tiltUnit')}</Text>
           </View>
         </View>
 
@@ -334,7 +367,7 @@ export default function AssessmentScreen() {
           >
             {isLoading
               ? <ActivityIndicator color="#fff" />
-              : <Text style={s.assessBtnText}>Assess</Text>
+              : <Text style={s.assessBtnText}>{t('assessment.assess')}</Text>
             }
           </TouchableOpacity>
         </View>
@@ -345,16 +378,48 @@ export default function AssessmentScreen() {
       <Modal visible={showBorderlinePrompt} transparent animationType="slide">
         <View style={s.modalOverlay}>
           <View style={s.modalCard}>
-            <Text style={s.modalTitle}>Borderline Result</Text>
-            <Text style={s.modalBody}>
-              The view appears to be roughly half-obstructed. Taking a second photo from
-              a slightly different angle will give a more accurate result.
-            </Text>
+            <Text style={s.modalTitle}>{t('assessment.borderline.title')}</Text>
+            <Text style={s.modalBody}>{t('assessment.borderline.body')}</Text>
             <TouchableOpacity style={s.modalPrimaryBtn} onPress={handleSecondPhoto}>
-              <Text style={s.modalPrimaryBtnText}>Take Another Photo</Text>
+              <Text style={s.modalPrimaryBtnText}>{t('assessment.borderline.takeAnother')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={s.modalSecondaryBtn} onPress={handleUseFirstResult}>
-              <Text style={s.modalSecondaryBtnText}>Use This Result</Text>
+              <Text style={s.modalSecondaryBtnText}>{t('assessment.borderline.useFirst')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Outside boundary modal */}
+      <Modal visible={showBoundaryModal} transparent animationType="fade">
+        <View style={s.modalOverlay}>
+          <View style={s.modalCard}>
+            <Text style={s.modalTitle}>{t('licence.outsideBoundary.title')}</Text>
+            <Text style={s.modalBody}>{t('licence.outsideBoundary.description')}</Text>
+            <Text style={s.modalNote}>{t('licence.outsideBoundary.distance', { distance: boundaryDistance })}</Text>
+            <TouchableOpacity style={s.modalPrimaryBtn} onPress={handleUpgradePressed}>
+              <Text style={s.modalPrimaryBtnText}>{t('licence.outsideBoundary.upgrade')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={s.modalSecondaryBtn} onPress={() => setShowBoundaryModal(false)}>
+              <Text style={s.modalSecondaryBtnText}>{t('licence.outsideBoundary.dismiss')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* No credits modal */}
+      <Modal visible={showNoCreditsModal} transparent animationType="fade">
+        <View style={s.modalOverlay}>
+          <View style={s.modalCard}>
+            <Text style={s.modalTitle}>{t('licence.noCredits.title')}</Text>
+            <Text style={s.modalBody}>
+              {t('licence.noCredits.description', { total: profile?.credits_remaining ?? 0 })}
+            </Text>
+            <TouchableOpacity style={s.modalPrimaryBtn} onPress={handleUpgradePressed}>
+              <Text style={s.modalPrimaryBtnText}>{t('licence.noCredits.upgrade')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={s.modalSecondaryBtn} onPress={() => setShowNoCreditsModal(false)}>
+              <Text style={s.modalSecondaryBtnText}>{t('licence.noCredits.dismiss')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -416,11 +481,11 @@ const s = StyleSheet.create({
   assessBtnDisabled: { backgroundColor: '#92400e' },
   assessBtnText: { color: '#fff', fontSize: 18, fontWeight: '700' },
 
-  // Borderline modal
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   modalCard: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 28, paddingBottom: Platform.OS === 'ios' ? 44 : 28 },
   modalTitle: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 12 },
-  modalBody: { fontSize: 15, color: '#374151', lineHeight: 22, marginBottom: 24 },
+  modalBody: { fontSize: 15, color: '#374151', lineHeight: 22, marginBottom: 8 },
+  modalNote: { fontSize: 14, color: '#6b7280', marginBottom: 20 },
   modalPrimaryBtn: { backgroundColor: '#f59e0b', paddingVertical: 16, borderRadius: 50, alignItems: 'center', marginBottom: 12 },
   modalPrimaryBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   modalSecondaryBtn: { paddingVertical: 12, alignItems: 'center' },
