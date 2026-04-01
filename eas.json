@@ -1,0 +1,59 @@
+{
+  "cli": {
+    "version": ">= 12.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "comment": "Used for day-to-day development. Installs a development client (Expo Go replacement) on your device.",
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://phohtdadtqxiqljcilvh.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "REPLACE_WITH_YOUR_ANON_KEY",
+        "EXPO_PUBLIC_HF_API_KEY": "REPLACE_WITH_YOUR_HF_KEY"
+      }
+    },
+    "preview": {
+      "comment": "Internal distribution build — install via QR code for testing without the store.",
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://phohtdadtqxiqljcilvh.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "REPLACE_WITH_YOUR_ANON_KEY",
+        "EXPO_PUBLIC_HF_API_KEY": "REPLACE_WITH_YOUR_HF_KEY"
+      }
+    },
+    "production": {
+      "comment": "Store submission build. EAS manages signing credentials automatically. Run: eas build --platform ios --profile production  /  eas build --platform android --profile production",
+      "ios": {
+        "distribution": "store",
+        "comment_credentials": "EAS fetches/creates your Distribution Certificate and Provisioning Profile automatically when you first run eas build. You will be prompted to sign in to your Apple Developer account."
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "comment_buildType": "app-bundle produces a .aab file, which is required for Google Play submission. A .apk is for sideloading only.",
+        "distribution": "store"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://phohtdadtqxiqljcilvh.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "REPLACE_WITH_YOUR_ANON_KEY",
+        "EXPO_PUBLIC_HF_API_KEY": "REPLACE_WITH_YOUR_HF_KEY"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "comment": "Run: eas submit --platform ios --profile production",
+        "appleId": "REPLACE_WITH_YOUR_APPLE_ID_EMAIL",
+        "ascAppId": "REPLACE_WITH_APP_STORE_CONNECT_APP_ID",
+        "appleTeamId": "REPLACE_WITH_YOUR_TEAM_ID"
+      },
+      "android": {
+        "comment": "Run: eas submit --platform android --profile production",
+        "serviceAccountKeyPath": "./google-play-service-account.json",
+        "track": "internal"
+      }
+    }
+  }
+}

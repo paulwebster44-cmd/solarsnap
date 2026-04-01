@@ -33,7 +33,7 @@ import { useTranslation } from 'react-i18next';
 import { fetchProducts, purchaseProduct, restorePurchases, IAPProduct } from '../services/iap/iapService';
 import { useAuth } from '../contexts/AuthContext';
 import type { LicenceTier } from '../services/auth/authService';
-import { COMMERCIAL_WEBSITE_URL } from '../config/iapConfig';
+import { COMMERCIAL_ENQUIRY_EMAIL } from '../config/iapConfig';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -190,11 +190,14 @@ export default function UpgradeSheet({ visible, productId, tierKey, onSuccess, o
               <Text style={s.restoreBtnText}>{t('iap.restore.label')}</Text>
             </TouchableOpacity>
 
-            {/* Commercial upsell — shown on the Premium sheet */}
+            {/* Commercial enquiry — shown on the Premium sheet.
+                Opens a pre-filled email rather than a purchase URL.
+                Apple guidelines prohibit linking to external purchase flows;
+                a mailto: enquiry link is explicitly permitted. */}
             {tierKey === 'premium' && (
               <TouchableOpacity
                 style={s.commercialLink}
-                onPress={() => Linking.openURL(COMMERCIAL_WEBSITE_URL)}
+                onPress={() => Linking.openURL(`mailto:${COMMERCIAL_ENQUIRY_EMAIL}?subject=SolarSnap%20Commercial%20Enquiry`)}
               >
                 <Text style={s.commercialLinkText}>{t('iap.commercial.link')}</Text>
               </TouchableOpacity>

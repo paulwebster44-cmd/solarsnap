@@ -16,7 +16,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
+  Linking,
   Modal,
   Platform,
   StyleSheet,
@@ -37,6 +37,8 @@ import { deductCredit } from '../services/auth/authService';
 import { checkBoundary, hasCredits } from '../services/auth/licenceCheck';
 import { useAuth } from '../contexts/AuthContext';
 import { AssessmentScreenNavProp } from '../types/navigation';
+import UpgradeSheet from '../components/UpgradeSheet';
+import { IAP_PRODUCTS, COMMERCIAL_ENQUIRY_EMAIL } from '../config/iapConfig';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -280,11 +282,17 @@ export default function AssessmentScreen() {
 
   // ── Licence modal actions ────────────────────────────────────────────────────
 
-  const handleUpgradePressed = () => {
-    setShowBoundaryModal(false);
+  const [showUpgradeSheet, setShowUpgradeSheet] = useState(false);
+
+  const handleUpgradeFromCredits = useCallback(() => {
     setShowNoCreditsModal(false);
-    Alert.alert('', t('licence.upgradeComingSoon'));
-  };
+    setShowUpgradeSheet(true);
+  }, []);
+
+  const handleUpgradeFromBoundary = useCallback(() => {
+    setShowBoundaryModal(false);
+    Linking.openURL(`mailto:${COMMERCIAL_ENQUIRY_EMAIL}?subject=SolarSnap%20Commercial%20Enquiry`);
+  }, []);
 
   // ── Render: permission gates ─────────────────────────────────────────────────
 
@@ -397,7 +405,7 @@ export default function AssessmentScreen() {
             <Text style={s.modalTitle}>{t('licence.outsideBoundary.title')}</Text>
             <Text style={s.modalBody}>{t('licence.outsideBoundary.description')}</Text>
             <Text style={s.modalNote}>{t('licence.outsideBoundary.distance', { distance: boundaryDistance })}</Text>
-            <TouchableOpacity style={s.modalPrimaryBtn} onPress={handleUpgradePressed}>
+            <TouchableOpacity style={s.modalPrimaryBtn} onPress={handleUpgradeFromBoundary}>
               <Text style={s.modalPrimaryBtnText}>{t('licence.outsideBoundary.upgrade')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={s.modalSecondaryBtn} onPress={() => setShowBoundaryModal(false)}>
@@ -407,6 +415,14 @@ export default function AssessmentScreen() {
         </View>
       </Modal>
 
+      <UpgradeSheet
+        visible={showUpgradeSheet}
+        productId={IAP_PRODUCTS.BASIC}
+        tierKey="basic"
+        onSuccess={() => setShowUpgradeSheet(false)}
+        onDismiss={() => setShowUpgradeSheet(false)}
+      />
+
       {/* No credits modal */}
       <Modal visible={showNoCreditsModal} transparent animationType="fade">
         <View style={s.modalOverlay}>
@@ -415,7 +431,7 @@ export default function AssessmentScreen() {
             <Text style={s.modalBody}>
               {t('licence.noCredits.description', { total: profile?.credits_remaining ?? 0 })}
             </Text>
-            <TouchableOpacity style={s.modalPrimaryBtn} onPress={handleUpgradePressed}>
+            <TouchableOpacity style={s.modalPrimaryBtn} onPress={handleUpgradeFromCredits}>
               <Text style={s.modalPrimaryBtnText}>{t('licence.noCredits.upgrade')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={s.modalSecondaryBtn} onPress={() => setShowNoCreditsModal(false)}>

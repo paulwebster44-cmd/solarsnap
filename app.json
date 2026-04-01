@@ -1,31 +1,50 @@
 {
   "expo": {
-    "name": "solarsnap",
+    "name": "SolarSnap",
     "slug": "solarsnap",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
+
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "co.uk.solarsnap.app",
+      "buildNumber": "1",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "SolarSnap uses the camera to photograph the sky at your proposed panel location. The photo is analysed to detect shading from buildings and trees.",
+        "NSLocationWhenInUseUsageDescription": "SolarSnap uses your GPS location to calculate the sun's position at your site and to confirm you are within your registered home assessment zone.",
+        "NSMotionUsageDescription": "SolarSnap uses the accelerometer to measure the angle your phone is being held, which corresponds to the tilt of the proposed solar panel."
+      }
     },
+
     "android": {
+      "package": "co.uk.solarsnap.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ]
     },
+
     "web": {
       "favicon": "./assets/favicon.png"
     },
+
     "plugins": [
       [
         "expo-camera",
@@ -36,12 +55,18 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "SolarSnap uses your location to calculate the sun's position at your site."
+          "locationWhenInUsePermission": "SolarSnap uses your location to calculate the sun's position at your site and to confirm you are within your home assessment zone."
         }
       ],
       "expo-secure-store",
       "expo-localization",
       "expo-in-app-purchases"
-    ]
+    ],
+
+    "extra": {
+      "eas": {
+        "projectId": "REPLACE_WITH_YOUR_EAS_PROJECT_ID"
+      }
+    }
   }
 }

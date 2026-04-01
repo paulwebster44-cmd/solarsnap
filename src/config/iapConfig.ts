@@ -29,10 +29,15 @@ export const IAP_PRODUCTS = {
 export type IAPProductId = (typeof IAP_PRODUCTS)[keyof typeof IAP_PRODUCTS];
 
 /**
- * The Commercial licence is sold via the website to avoid Apple/Google
- * revenue share. This URL is shown in the upgrade prompt for commercial.
+ * Contact address shown in the Commercial tier enquiry prompt.
+ *
+ * IMPORTANT — App Store compliance:
+ *   Apple's guidelines prohibit directing users to an external URL to complete
+ *   a purchase that bypasses IAP. The Commercial prompt must therefore be an
+ *   enquiry / contact link only, not a purchase link. We open a pre-filled
+ *   mailto: so the user can get in touch; no price or purchase language is used.
  */
-export const COMMERCIAL_WEBSITE_URL = 'https://solarsnap.co.uk';
+export const COMMERCIAL_ENQUIRY_EMAIL = 'hello@solarsnap.co.uk';
 
 /** All product IDs as an array — passed to getProductsAsync() on startup. */
 export const ALL_PRODUCT_IDS: string[] = Object.values(IAP_PRODUCTS);
