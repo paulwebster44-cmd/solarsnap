@@ -12,7 +12,7 @@
  * an upgrade prompt so they understand what they are missing.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -24,6 +24,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+// Alert kept for the settings validation error
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
@@ -39,6 +40,8 @@ import {
   PremiumResultsScreenNavProp,
   PremiumResultsScreenRouteProp,
 } from '../types/navigation';
+import UpgradeSheet from '../components/UpgradeSheet';
+import { IAP_PRODUCTS } from '../config/iapConfig';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -55,7 +58,6 @@ function bearingToLabel(b: number): string {
   return ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(b / 45) % 8];
 }
 
-/** Returns true when this licence tier has access to the premium yield report. */
 function hasPremiumAccess(tier: string | undefined): boolean {
   return tier === 'premium' || tier === 'commercial';
 }
@@ -89,13 +91,12 @@ function MonthlyChart({ monthly }: { monthly: PVGISResult['monthly'] }) {
   );
 }
 
-// ── Upgrade prompt (basic-tier users) ─────────────────────────────────────────
+// ── Locked preview shown behind the UpgradeSheet for non-premium users ────────
 
-function UpgradePrompt({ onDismiss }: { onDismiss: () => void }) {
+function LockedPreview() {
   const { t } = useTranslation();
   return (
     <View style={up.container}>
-      {/* Locked preview cards — placeholder values shown greyed out */}
       <View style={up.previewRow}>
         <View style={up.previewCard}>
           <Text style={up.previewLabel}>{t('premium.upgrade.annualYield')}</Text>
@@ -108,28 +109,11 @@ function UpgradePrompt({ onDismiss }: { onDismiss: () => void }) {
       </View>
       <View style={up.previewChartCard}>
         <Text style={up.previewLabel}>{t('premium.upgrade.monthlyChart')}</Text>
-        {/* Placeholder bars */}
         <View style={up.previewBars}>
           {[40, 55, 70, 80, 90, 95, 95, 90, 75, 60, 45, 35].map((h, i) => (
             <View key={i} style={[up.previewBar, { height: h * 0.6 }]} />
           ))}
         </View>
-      </View>
-
-      {/* Lock overlay */}
-      <View style={up.lockOverlay}>
-        <Text style={up.lockIcon}>🔒</Text>
-        <Text style={up.lockTitle}>{t('premium.upgrade.title')}</Text>
-        <Text style={up.lockBody}>{t('premium.upgrade.body')}</Text>
-        <TouchableOpacity
-          style={up.ctaBtn}
-          onPress={() => Alert.alert('', t('licence.upgradeComingSoon'))}
-        >
-          <Text style={up.ctaBtnText}>{t('premium.upgrade.cta')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={up.dismissBtn} onPress={onDismiss}>
-          <Text style={up.dismissBtnText}>{t('premium.upgrade.dismiss')}</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -146,6 +130,7 @@ export default function PremiumResultsScreen() {
     obstruction, adjustedScore, adjustedVerdict,
   } = useRoute<PremiumResultsScreenRouteProp>().params;
 
+  const [showUpgrade, setShowUpgrade] = useState(true);
   const isPremium = hasPremiumAccess(profile?.licence_tier);
 
   // ── State ──────────────────────────────────────────────────────────────────
@@ -222,7 +207,7 @@ export default function PremiumResultsScreen() {
   const displayScore   = adjustedScore   ?? result.annualDaylightPercentage;
   const colour = verdictColour(displayVerdict);
 
-  // ── Render: basic-tier gate ────────────────────────────────────────────────
+  // ── Render: non-premium gate — show locked preview + UpgradeSheet ─────────
 
   if (!isPremium) {
     return (
@@ -232,7 +217,14 @@ export default function PremiumResultsScreen() {
           <Text style={s.verdictText}>{t(`results.verdict.${displayVerdict}` as any)}</Text>
           <Text style={s.scoreText}>{t('results.annualScore', { score: displayScore })}</Text>
         </View>
-        <UpgradePrompt onDismiss={() => navigation.goBack()} />
+        <LockedPreview />
+        <UpgradeSheet
+          visible={showUpgrade}
+          productId={IAP_PRODUCTS.PREMIUM}
+          tierKey="premium"
+          onSuccess={() => setShowUpgrade(false)}
+          onDismiss={() => navigation.goBack()}
+        />
       </View>
     );
   }

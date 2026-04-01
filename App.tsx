@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import { connectToStore, disconnectFromStore } from './src/services/iap/iapService';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
@@ -58,6 +59,14 @@ function AppNavigator() {
 }
 
 export default function App() {
+  // Connect to the native IAP store once on startup so the purchase listener
+  // is ready before the user ever taps an upgrade button.
+  // Errors are swallowed — store unavailability should not block app launch.
+  useEffect(() => {
+    connectToStore().catch(console.warn);
+    return () => { disconnectFromStore().catch(console.warn); };
+  }, []);
+
   return (
     <AuthProvider>
       <NavigationContainer>

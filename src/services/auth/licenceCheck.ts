@@ -25,6 +25,7 @@ export function checkBoundary(
   userLon: number,
   profile: UserProfile,
 ): BoundaryResult {
+  // Commercial licence has no boundary restriction
   if (profile.licence_tier === 'commercial') return { allowed: true };
   if (profile.home_latitude == null || profile.home_longitude == null) return { allowed: true };
 
@@ -33,6 +34,25 @@ export function checkBoundary(
   return { allowed: false, distance: Math.round(distance) };
 }
 
+/**
+ * Returns whether the user may run another assessment.
+ *
+ * Paid tiers (basic, premium, commercial) have unlimited assessments — credits
+ * only apply to the free tier, where they serve as the trial allowance.
+ */
 export function hasCredits(profile: UserProfile): boolean {
+  if (profile.licence_tier !== 'free') return true;
   return profile.credits_remaining > 0;
+}
+
+/** Returns true if the user has purchased at least the Basic tier. */
+export function hasPaidTier(profile: UserProfile): boolean {
+  return profile.licence_tier === 'basic' ||
+         profile.licence_tier === 'premium' ||
+         profile.licence_tier === 'commercial';
+}
+
+/** Returns true if the user has purchased the Premium tier or holds a Commercial licence. */
+export function hasPremiumTier(profile: UserProfile): boolean {
+  return profile.licence_tier === 'premium' || profile.licence_tier === 'commercial';
 }

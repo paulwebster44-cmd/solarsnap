@@ -84,4 +84,60 @@ export default {
       dismiss: 'Back to Results',
     },
   },
+  iap: {
+    loadingPrice: 'Loading price…',
+    buy: 'Buy for {{price}}',
+    dismiss: 'Not now',
+    success: {
+      title: 'Purchase successful!',
+      body: 'Your account has been upgraded. Enjoy your new features.',
+    },
+    error: {
+      generic: 'Something went wrong. Please try again.',
+      storeUnavailable: 'The store is unavailable right now. Please check your connection and try again.',
+      productNotFound: 'This product could not be found in the store. Please check your connection or reinstall the app.',
+      paymentDeclined: 'Your payment was declined. Please check your payment method and try again.',
+      validationFailed: 'Your purchase could not be verified. Please contact support if you believe this is an error.',
+    },
+    restore: {
+      label: 'Restore Previous Purchase',
+      success: {
+        title: 'Purchase restored',
+        body: 'Your previous purchase has been restored successfully.',
+      },
+      noneFound: {
+        title: 'No purchases found',
+        body: 'No previous purchases were found for this account.',
+      },
+    },
+    commercial: {
+      link: 'Need a Commercial licence? Visit solarsnap.co.uk →',
+    },
+    tier: {
+      basic: {
+        badge: 'Basic',
+        title: 'Unlock SolarSnap Basic',
+        subtitle: 'See your full solar suitability result and start saving on your energy bills.',
+        features: [
+          'Full suitability verdict (Excellent / Good / Fair / Poor)',
+          'Sky obstruction analysis',
+          'Sun position data for your site',
+          'Assessments within 200m of your home',
+          '10 assessments included',
+        ],
+      },
+      premium: {
+        badge: 'Premium',
+        title: 'Unlock the Full Yield Report',
+        subtitle: 'Get a detailed energy forecast based on real EU solar irradiance data.',
+        features: [
+          'Everything in Basic',
+          'Estimated annual energy yield (kWh)',
+          'Estimated annual saving (£)',
+          'Monthly energy breakdown chart',
+          'Adjust panel capacity and energy price',
+        ],
+      },
+    },
+  },
 } as const;

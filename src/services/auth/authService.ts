@@ -1,11 +1,14 @@
 import { supabase } from './supabaseClient';
 
+export type LicenceTier = 'free' | 'basic' | 'premium' | 'commercial';
+
 export interface UserProfile {
   id: string;
   home_latitude: number | null;
   home_longitude: number | null;
   credits_remaining: number;
-  licence_tier: 'basic' | 'premium' | 'commercial';
+  licence_tier: LicenceTier;
+  tier_purchased_at: string | null;
 }
 
 export async function signIn(email: string, password: string) {
@@ -48,4 +51,17 @@ export async function deductCredit(): Promise<number> {
   const { data, error } = await supabase.rpc('deduct_assessment_credit');
   if (error) throw error;
   return data as number;
+}
+
+/**
+ * Updates the user's licence tier after a validated in-app purchase.
+ * In practice this is called by the IAP service after the Edge Function
+ * confirms the purchase; the profile is then refreshed via AuthContext.
+ */
+export async function updateLicenceTier(userId: string, tier: LicenceTier): Promise<void> {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ licence_tier: tier, tier_purchased_at: new Date().toISOString() })
+    .eq('id', userId);
+  if (error) throw error;
 }

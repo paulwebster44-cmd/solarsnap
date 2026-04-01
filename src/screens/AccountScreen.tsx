@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Platform,
   ScrollView,
@@ -13,13 +14,32 @@ import { useTranslation } from 'react-i18next';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../contexts/AuthContext';
 import { AppStackParamList } from '../types/navigation';
+import { restorePurchases } from '../services/iap/iapService';
 
 type NavProp = NativeStackNavigationProp<AppStackParamList, 'Account'>;
 
 export default function AccountScreen() {
   const { t } = useTranslation();
-  const { user, profile, doSignOut } = useAuth();
+  const { user, profile, doSignOut, refreshProfile } = useAuth();
   const navigation = useNavigation<NavProp>();
+  const [restoring, setRestoring] = useState(false);
+
+  const handleRestore = async () => {
+    setRestoring(true);
+    try {
+      const tier = await restorePurchases();
+      if (tier) {
+        await refreshProfile();
+        Alert.alert(t('iap.restore.success.title'), t('iap.restore.success.body'));
+      } else {
+        Alert.alert(t('iap.restore.noneFound.title'), t('iap.restore.noneFound.body'));
+      }
+    } catch (err) {
+      Alert.alert(t('common.error'), err instanceof Error ? err.message : t('iap.error.generic'));
+    } finally {
+      setRestoring(false);
+    }
+  };
 
   const handleSignOut = () => {
     Alert.alert('', t('account.confirmSignOut'), [
@@ -62,6 +82,18 @@ export default function AccountScreen() {
             <Text style={s.changeBtnText}>{t('account.changeLocation')}</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Restore Purchases — required by Apple App Store guidelines */}
+        <TouchableOpacity
+          style={s.restoreBtn}
+          onPress={handleRestore}
+          disabled={restoring}
+        >
+          {restoring
+            ? <ActivityIndicator color="#6b7280" />
+            : <Text style={s.restoreBtnText}>{t('iap.restore.label')}</Text>
+          }
+        </TouchableOpacity>
 
         <TouchableOpacity style={s.signOutBtn} onPress={handleSignOut}>
           <Text style={s.signOutBtnText}>{t('account.signOut')}</Text>
@@ -110,6 +142,11 @@ const s = StyleSheet.create({
     backgroundColor: '#fef3c7', borderRadius: 8,
   },
   changeBtnText: { color: '#d97706', fontWeight: '600', fontSize: 15 },
+  restoreBtn: {
+    backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb',
+    borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginBottom: 12,
+  },
+  restoreBtnText: { color: '#6b7280', fontSize: 15 },
   signOutBtn: {
     backgroundColor: '#fff', borderWidth: 1, borderColor: '#fca5a5',
     borderRadius: 12, paddingVertical: 16, alignItems: 'center',

@@ -6,7 +6,7 @@
  * the adjusted score so the user understands the impact of any obstructions.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Platform,
   ScrollView,
@@ -20,6 +20,10 @@ import { useTranslation } from 'react-i18next';
 import { ResultsScreenNavProp, ResultsScreenRouteProp } from '../types/navigation';
 import { SuitabilityVerdict } from '../types/solar';
 import { useAuth } from '../contexts/AuthContext';
+import UpgradeSheet from '../components/UpgradeSheet';
+import { IAP_PRODUCTS } from '../config/iapConfig';
+import { hasPaidTier, hasPremiumTier } from '../services/auth/licenceCheck';
+import type { LicenceTier } from '../services/auth/authService';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -45,8 +49,14 @@ export default function ResultsScreen() {
   const params = useRoute<ResultsScreenRouteProp>().params;
   const { result, bearing, tilt, latitude, longitude, obstruction, adjustedScore, adjustedVerdict } = params;
 
-  const isPremiumOrCommercial =
-    profile?.licence_tier === 'premium' || profile?.licence_tier === 'commercial';
+  const [showUpgrade, setShowUpgrade] = useState(true);
+
+  const isPaid    = profile ? hasPaidTier(profile)    : false;
+  const isPremium = profile ? hasPremiumTier(profile) : false;
+
+  // Show the upgrade sheet if the user is on the free tier.
+  // Once they purchase (or already have a paid tier), the sheet stays hidden.
+  const upgradeVisible = !isPaid && showUpgrade;
 
   const displayVerdict = adjustedVerdict ?? result.verdict;
   const displayScore   = adjustedScore   ?? result.annualDaylightPercentage;
@@ -166,7 +176,7 @@ export default function ResultsScreen() {
           onPress={() => navigation.navigate('PremiumResults', params)}
         >
           <Text style={s.premiumBtnText}>
-            {isPremiumOrCommercial
+            {isPremium
               ? t('premium.seeFullReport')
               : t('premium.unlockFullReport')}
           </Text>
@@ -175,6 +185,15 @@ export default function ResultsScreen() {
           <Text style={s.retryBtnText}>{t('results.assessAgain')}</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Basic tier upgrade gate — shown automatically for free-tier users */}
+      <UpgradeSheet
+        visible={upgradeVisible}
+        productId={IAP_PRODUCTS.BASIC}
+        tierKey="basic"
+        onSuccess={(_tier: LicenceTier) => setShowUpgrade(false)}
+        onDismiss={() => setShowUpgrade(false)}
+      />
 
     </View>
   );
