@@ -14,6 +14,7 @@ interface AuthContextValue {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
+  profileLoading: boolean;
   doSignIn: (email: string, password: string) => Promise<void>;
   doSignUp: (email: string, password: string) => Promise<void>;
   doSignOut: () => Promise<void>;
@@ -27,10 +28,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   const loadProfile = async (userId: string) => {
+    setProfileLoading(true);
     const p = await getProfile(userId);
     setProfile(p);
+    setProfileLoading(false);
   };
 
   useEffect(() => {
@@ -79,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, loading, doSignIn, doSignUp, doSignOut, doSetHomeLocation, refreshProfile }}
+      value={{ user, profile, loading, profileLoading, doSignIn, doSignUp, doSignOut, doSetHomeLocation, refreshProfile }}
     >
       {children}
     </AuthContext.Provider>
