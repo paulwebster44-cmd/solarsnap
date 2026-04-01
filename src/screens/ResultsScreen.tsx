@@ -19,6 +19,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { ResultsScreenNavProp, ResultsScreenRouteProp } from '../types/navigation';
 import { SuitabilityVerdict } from '../types/solar';
+import { useAuth } from '../contexts/AuthContext';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -40,8 +41,12 @@ function bearingToLabel(b: number): string {
 export default function ResultsScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<ResultsScreenNavProp>();
-  const { result, bearing, tilt, latitude, longitude, obstruction, adjustedScore, adjustedVerdict } =
-    useRoute<ResultsScreenRouteProp>().params;
+  const { profile } = useAuth();
+  const params = useRoute<ResultsScreenRouteProp>().params;
+  const { result, bearing, tilt, latitude, longitude, obstruction, adjustedScore, adjustedVerdict } = params;
+
+  const isPremiumOrCommercial =
+    profile?.licence_tier === 'premium' || profile?.licence_tier === 'commercial';
 
   const displayVerdict = adjustedVerdict ?? result.verdict;
   const displayScore   = adjustedScore   ?? result.annualDaylightPercentage;
@@ -153,8 +158,19 @@ export default function ResultsScreen() {
 
       </ScrollView>
 
-      {/* ── Footer button ── */}
+      {/* ── Footer buttons ── */}
       <View style={s.footer}>
+        {/* Premium CTA — full report for premium/commercial, upgrade prompt for basic */}
+        <TouchableOpacity
+          style={s.premiumBtn}
+          onPress={() => navigation.navigate('PremiumResults', params)}
+        >
+          <Text style={s.premiumBtnText}>
+            {isPremiumOrCommercial
+              ? t('premium.seeFullReport')
+              : t('premium.unlockFullReport')}
+          </Text>
+        </TouchableOpacity>
         <TouchableOpacity style={s.retryBtn} onPress={() => navigation.goBack()}>
           <Text style={s.retryBtnText}>{t('results.assessAgain')}</Text>
         </TouchableOpacity>
@@ -213,7 +229,9 @@ const s = StyleSheet.create({
   rowValue: { color: '#111827', fontSize: 15, fontWeight: '600' },
   tiltNote: { marginTop: 10, fontSize: 12, color: '#9ca3af', fontStyle: 'italic' },
 
-  footer: { paddingHorizontal: 24, paddingBottom: Platform.OS === 'ios' ? 40 : 24, paddingTop: 16, backgroundColor: '#fff', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#e5e7eb' },
+  footer: { paddingHorizontal: 24, paddingBottom: Platform.OS === 'ios' ? 40 : 24, paddingTop: 16, backgroundColor: '#fff', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#e5e7eb', gap: 10 },
+  premiumBtn: { backgroundColor: '#111827', paddingVertical: 16, borderRadius: 50, alignItems: 'center' },
+  premiumBtnText: { color: '#f59e0b', fontSize: 17, fontWeight: '700' },
   retryBtn: { backgroundColor: '#f59e0b', paddingVertical: 16, borderRadius: 50, alignItems: 'center' },
   retryBtnText: { color: '#fff', fontSize: 17, fontWeight: '700' },
 });

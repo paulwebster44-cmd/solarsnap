@@ -14,6 +14,7 @@ import AssessmentScreen from './src/screens/AssessmentScreen';
 import ResultsScreen from './src/screens/ResultsScreen';
 import SetHomeLocationScreen from './src/screens/SetHomeLocationScreen';
 import AccountScreen from './src/screens/AccountScreen';
+import PremiumResultsScreen from './src/screens/PremiumResultsScreen';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const AppStack = createNativeStackNavigator<AppStackParamList>();
@@ -49,6 +50,7 @@ function AppNavigator() {
       <AppStack.Screen name="Home" component={HomeScreen} />
       <AppStack.Screen name="Assessment" component={AssessmentScreen} />
       <AppStack.Screen name="Results" component={ResultsScreen} />
+      <AppStack.Screen name="PremiumResults" component={PremiumResultsScreen} />
       <AppStack.Screen name="SetHomeLocation" component={SetHomeLocationScreen} />
       <AppStack.Screen name="Account" component={AccountScreen} />
     </AppStack.Navigator>
