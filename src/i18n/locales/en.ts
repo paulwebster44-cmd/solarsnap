@@ -135,6 +135,9 @@ export default {
     confirmSignOut: 'Are you sure you want to sign out?',
     notSet: 'Not set',
     coordinates: '{{lat}}, {{lon}}',
+    language: 'Language',
+    languagePickerTitle: 'Choose Language',
+    languageAutoDetected: 'Auto-detected',
   },
   licence: {
     outsideBoundary: {
