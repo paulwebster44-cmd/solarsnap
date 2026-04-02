@@ -45,15 +45,24 @@ export interface IAPProduct {
 
 // ── Store connection ───────────────────────────────────────────────────────────
 
+let storeReady = false;
+
+function isKeyConfigured(key: string): boolean {
+  return key.length > 0 && !key.startsWith('REPLACE_WITH');
+}
+
 /**
  * Configure RevenueCat on app startup.
  * Uses the Supabase user ID as the RevenueCat app user ID so purchases
  * are tied to the account and survive reinstalls / device switches.
+ * No-ops silently if the API key placeholder has not been replaced yet.
  */
 export async function connectToStore(): Promise<void> {
   const apiKey = Platform.OS === 'ios' ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
+  if (!isKeyConfigured(apiKey)) return;
   const { data: { user } } = await supabase.auth.getUser();
   Purchases.configure({ apiKey, appUserID: user?.id });
+  storeReady = true;
 }
 
 /** No-op — RevenueCat does not require explicit disconnection. */
@@ -69,6 +78,7 @@ export async function disconnectFromStore(): Promise<void> {
  * configured yet in the RevenueCat dashboard.
  */
 export async function fetchProducts(productIds: string[]): Promise<IAPProduct[]> {
+  if (!storeReady) return [];
   try {
     const offerings = await Purchases.getOfferings();
     const packages = offerings.current?.availablePackages ?? [];
@@ -94,6 +104,9 @@ export async function fetchProducts(productIds: string[]): Promise<IAPProduct[]>
  * On success we update the Supabase profile tier directly.
  */
 export async function purchaseProduct(productId: string): Promise<PurchaseOutcome> {
+  if (!storeReady) {
+    return { success: false, cancelled: false, message: 'Store not available. Please try again later.' };
+  }
   try {
     const offerings = await Purchases.getOfferings();
     const packages = offerings.current?.availablePackages ?? [];
@@ -131,6 +144,7 @@ export async function purchaseProduct(productId: string): Promise<PurchaseOutcom
  * Returns the highest tier found, or null if nothing was restored.
  */
 export async function restorePurchases(): Promise<LicenceTier | null> {
+  if (!storeReady) return null;
   const customerInfo = await Purchases.restorePurchases();
   const active = customerInfo.entitlements.active;
 
