@@ -1,24 +1,32 @@
 /**
  * iapService.ts
  *
- * Wraps expo-in-app-purchases to provide a promise-based API that
- * the rest of the app can use without dealing with callback listeners directly.
+ * Wraps RevenueCat (react-native-purchases) to provide a promise-based IAP API.
  *
  * Key responsibilities:
- *   1. Connect to the App Store / Google Play on app startup
- *   2. Fetch live product metadata (price, title) so the UI never hardcodes prices
- *   3. Initiate a purchase and wait for the result (bridging the callback API to a Promise)
- *   4. After the store confirms a purchase, validate it server-side via the Supabase
- *      Edge Function before granting access — this prevents receipt forgery
- *   5. Acknowledge / finish the transaction ONLY after server validation succeeds
- *      (acknowledging before validation can let a refund slip through to a free upgrade)
- *   6. Restore previous purchases for users who reinstall the app
+ *   1. Configure RevenueCat on app startup with the user's Supabase ID as the
+ *      app user ID — this ties purchases to accounts across devices/reinstalls
+ *   2. Fetch live product metadata (price, title) from RevenueCat Offerings
+ *   3. Initiate a purchase via RevenueCat — receipt validation is handled
+ *      server-side by RevenueCat automatically; no separate Edge Function needed
+ *   4. After a confirmed purchase, update the Supabase profile tier directly
+ *   5. Restore previous purchases — RevenueCat re-validates and returns entitlements
+ *
+ * RevenueCat setup checklist (one-time, in the RevenueCat dashboard):
+ *   1. Create a free account at https://app.revenuecat.com
+ *   2. Add an app for iOS and Android
+ *   3. Create Entitlements: 'basic' and 'premium'
+ *   4. Create Products: 'solarsnap_basic' and 'solarsnap_premium'
+ *   5. Attach products to entitlements
+ *   6. Copy the public SDK keys to src/config/iapConfig.ts
  */
 
-import * as IAP from 'expo-in-app-purchases';
+import Purchases, { CustomerInfo } from 'react-native-purchases';
 import { Platform } from 'react-native';
 import { supabase } from '../auth/supabaseClient';
+import { updateLicenceTier } from '../auth/authService';
 import type { LicenceTier } from '../auth/authService';
+import { REVENUECAT_IOS_KEY, REVENUECAT_ANDROID_KEY, IAP_PRODUCTS } from '../../config/iapConfig';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -35,94 +43,43 @@ export interface IAPProduct {
   priceString: string;
 }
 
-// ── Module-level purchase resolver ────────────────────────────────────────────
-//
-// expo-in-app-purchases uses a single global listener for purchase events.
-// When the user taps "Buy", we store a Promise resolver here; the listener
-// resolves it once the purchase completes, fails, or is cancelled.
-// Only one purchase can be in flight at a time so this is safe.
-
-let pendingResolver: ((outcome: PurchaseOutcome) => void) | null = null;
-
 // ── Store connection ───────────────────────────────────────────────────────────
 
 /**
- * Connect to the native store and register the global purchase listener.
- * Call once on app startup (in App.tsx). Errors are non-fatal — the app
- * should still load even if the store is temporarily unreachable.
+ * Configure RevenueCat on app startup.
+ * Uses the Supabase user ID as the RevenueCat app user ID so purchases
+ * are tied to the account and survive reinstalls / device switches.
  */
 export async function connectToStore(): Promise<void> {
-  await IAP.connectAsync();
-
-  IAP.setPurchaseListener(async ({ responseCode, results, errorCode }) => {
-    if (!pendingResolver) return; // no active purchase flow
-
-    // ── User cancelled ─────────────────────────────────────────────────────────
-    if (responseCode === IAP.IAPResponseCode.USER_CANCELED) {
-      pendingResolver({ success: false, cancelled: true });
-      pendingResolver = null;
-      return;
-    }
-
-    // ── Store or network error ─────────────────────────────────────────────────
-    if (responseCode !== IAP.IAPResponseCode.OK || !results?.length) {
-      const msg = errorCode
-        ? `Store error (code ${errorCode})`
-        : 'The purchase could not be completed. Please try again.';
-      pendingResolver({ success: false, cancelled: false, message: msg });
-      pendingResolver = null;
-      return;
-    }
-
-    // ── Purchase received — validate server-side before acknowledging ──────────
-    const purchase = results[0];
-    try {
-      const tier = await validateWithServer(purchase);
-
-      // Acknowledge the transaction AFTER server validation.
-      // Pass false for consumeItem — our products are non-consumable (one-time purchases)
-      // so we acknowledge but do not consume. Consuming would remove the purchase from
-      // the user's history and prevent it from being restored.
-      await IAP.finishTransactionAsync(purchase, /* consumeItem */ false);
-
-      pendingResolver({ success: true, tier });
-    } catch (err) {
-      // Do NOT finish the transaction if validation failed — the store will
-      // surface it again on the next app launch so the user is not charged
-      // without receiving their content.
-      pendingResolver({
-        success: false,
-        cancelled: false,
-        message: err instanceof Error ? err.message : 'Purchase validation failed. Please contact support.',
-      });
-    }
-
-    pendingResolver = null;
-  });
+  const apiKey = Platform.OS === 'ios' ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
+  const { data: { user } } = await supabase.auth.getUser();
+  Purchases.configure({ apiKey, appUserID: user?.id });
 }
 
+/** No-op — RevenueCat does not require explicit disconnection. */
 export async function disconnectFromStore(): Promise<void> {
-  await IAP.disconnectAsync();
+  // RevenueCat manages its own lifecycle
 }
 
 // ── Product metadata ───────────────────────────────────────────────────────────
 
 /**
- * Fetches live product metadata from the store.
- * Always use this to display prices — never hardcode them.
- * Returns an empty array if the store is unavailable or the products aren't
- * registered yet (which is expected in development before store setup).
+ * Fetches live product metadata from RevenueCat Offerings.
+ * Returns an empty array if offerings are unavailable or products aren't
+ * configured yet in the RevenueCat dashboard.
  */
 export async function fetchProducts(productIds: string[]): Promise<IAPProduct[]> {
   try {
-    const { responseCode, results } = await IAP.getProductsAsync(productIds);
-    if (responseCode !== IAP.IAPResponseCode.OK || !results) return [];
-    return results.map((p) => ({
-      productId: p.productId,
-      title: p.title,
-      description: p.description,
-      priceString: p.priceString,
-    }));
+    const offerings = await Purchases.getOfferings();
+    const packages = offerings.current?.availablePackages ?? [];
+    return packages
+      .filter((pkg) => productIds.includes(pkg.product.identifier))
+      .map((pkg) => ({
+        productId: pkg.product.identifier,
+        title: pkg.product.title,
+        description: pkg.product.description,
+        priceString: pkg.product.priceString,
+      }));
   } catch {
     return [];
   }
@@ -131,29 +88,39 @@ export async function fetchProducts(productIds: string[]): Promise<IAPProduct[]>
 // ── Purchase ───────────────────────────────────────────────────────────────────
 
 /**
- * Initiates a purchase for the given product ID and waits for the outcome.
+ * Initiates a purchase for the given product ID.
  *
- * Returns a typed PurchaseOutcome — the caller should not need to handle
- * raw IAP events. The purchase flow is:
- *   purchaseItemAsync → store shows payment sheet → listener fires →
- *   validateWithServer → finishTransactionAsync → resolve promise
+ * RevenueCat validates the receipt with Apple/Google automatically.
+ * On success we update the Supabase profile tier directly.
  */
 export async function purchaseProduct(productId: string): Promise<PurchaseOutcome> {
-  return new Promise(async (resolve) => {
-    pendingResolver = resolve;
-    try {
-      await IAP.purchaseItemAsync(productId);
-    } catch (err) {
-      // purchaseItemAsync throws synchronously for invalid product IDs or
-      // when another purchase is already in progress
-      pendingResolver = null;
-      resolve({
+  try {
+    const offerings = await Purchases.getOfferings();
+    const packages = offerings.current?.availablePackages ?? [];
+    const pkg = packages.find((p) => p.product.identifier === productId);
+
+    if (!pkg) {
+      return {
         success: false,
         cancelled: false,
-        message: err instanceof Error ? err.message : 'Could not initiate purchase.',
-      });
+        message: 'Product not found. Please check your internet connection and try again.',
+      };
     }
-  });
+
+    const { customerInfo } = await Purchases.purchasePackage(pkg);
+    const tier = tierFromCustomerInfo(customerInfo, productId);
+    await updateLicenceTier(tier);
+    return { success: true, tier };
+  } catch (err: any) {
+    if (err?.userCancelled) {
+      return { success: false, cancelled: true };
+    }
+    return {
+      success: false,
+      cancelled: false,
+      message: err?.message ?? 'The purchase could not be completed. Please try again.',
+    };
+  }
 }
 
 // ── Restore purchases ──────────────────────────────────────────────────────────
@@ -161,93 +128,35 @@ export async function purchaseProduct(productId: string): Promise<PurchaseOutcom
 /**
  * Restores previously purchased products.
  * Required by Apple App Store guidelines for non-subscription IAPs.
- *
- * For each restored purchase we re-validate server-side so Supabase is updated
- * even if the user switched devices or reinstalled the app.
- *
  * Returns the highest tier found, or null if nothing was restored.
  */
 export async function restorePurchases(): Promise<LicenceTier | null> {
-  const { responseCode, results } = await IAP.getPurchaseHistoryAsync();
-  if (responseCode !== IAP.IAPResponseCode.OK || !results?.length) return null;
+  const customerInfo = await Purchases.restorePurchases();
+  const active = customerInfo.entitlements.active;
 
-  let highestTier: LicenceTier | null = null;
+  let tier: LicenceTier | null = null;
+  if (active['premium']) tier = 'premium';
+  else if (active['basic']) tier = 'basic';
 
-  for (const purchase of results) {
-    try {
-      const tier = await validateWithServer(purchase);
-      await IAP.finishTransactionAsync(purchase, false);
-      // Keep the "highest" tier found: commercial > premium > basic > free
-      highestTier = higherTier(highestTier, tier);
-    } catch {
-      // Validation failure for an individual historical purchase is non-fatal
-    }
+  if (tier) {
+    await updateLicenceTier(tier);
   }
 
-  return highestTier;
+  return tier;
 }
 
-// ── Server-side validation ─────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
 /**
- * Sends the raw purchase receipt to the Supabase Edge Function for verification.
- *
- * On iOS, expo-in-app-purchases provides a base64 receipt (transactionReceipt).
- * On Android, it provides a purchaseToken string.
- *
- * The Edge Function validates with Apple / Google, updates the Supabase profile,
- * and returns the new tier. We never trust the productId from the purchase object
- * alone — the server confirms it against the verified receipt.
+ * Determines the licence tier from RevenueCat CustomerInfo.
+ * Prefers entitlement-based detection; falls back to product ID matching.
  */
-async function validateWithServer(purchase: IAP.InAppPurchase): Promise<LicenceTier> {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error('Not signed in. Please log in and try again.');
-
-  const body: Record<string, string> = {
-    productId: purchase.productId,
-    platform: Platform.OS === 'ios' ? 'ios' : 'android',
-  };
-
-  if (Platform.OS === 'ios') {
-    // transactionReceipt is a base64-encoded App Store receipt
-    const receipt = (purchase as any).transactionReceipt as string | undefined;
-    if (!receipt) throw new Error('No receipt data from App Store.');
-    body.receipt = receipt;
-  } else {
-    // purchaseToken is the Google Play purchase token
-    const token = (purchase as any).purchaseToken as string | undefined;
-    if (!token) throw new Error('No purchase token from Google Play.');
-    body.purchaseToken = token;
-  }
-
-  const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-  if (!supabaseUrl) throw new Error('EXPO_PUBLIC_SUPABASE_URL not set');
-
-  const response = await fetch(`${supabaseUrl}/functions/v1/validate-purchase`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${session.access_token}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok || !data.success) {
-    throw new Error(data.message ?? `Validation failed (HTTP ${response.status})`);
-  }
-
-  return data.tier as LicenceTier;
-}
-
-// ── Tier comparison helper ─────────────────────────────────────────────────────
-
-const TIER_RANK: Record<LicenceTier, number> = {
-  free: 0, basic: 1, premium: 2, commercial: 3,
-};
-
-function higherTier(a: LicenceTier | null, b: LicenceTier): LicenceTier {
-  if (a === null) return b;
-  return TIER_RANK[a] >= TIER_RANK[b] ? a : b;
+function tierFromCustomerInfo(customerInfo: CustomerInfo, productId: string): LicenceTier {
+  const active = customerInfo.entitlements.active;
+  if (active['premium']) return 'premium';
+  if (active['basic']) return 'basic';
+  // Fallback: infer from product ID if entitlements aren't configured yet
+  if (productId === IAP_PRODUCTS.PREMIUM) return 'premium';
+  if (productId === IAP_PRODUCTS.BASIC) return 'basic';
+  return 'free';
 }

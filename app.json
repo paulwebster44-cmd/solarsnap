@@ -7,13 +7,11 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
-
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-
     "ios": {
       "bundleIdentifier": "co.uk.solarsnap.app",
       "buildNumber": "1",
@@ -24,7 +22,6 @@
         "NSMotionUsageDescription": "SolarSnap uses the accelerometer to measure the angle your phone is being held, which corresponds to the tilt of the proposed solar panel."
       }
     },
-
     "android": {
       "package": "co.uk.solarsnap.app",
       "versionCode": 1,
@@ -37,14 +34,13 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION"
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.RECORD_AUDIO"
       ]
     },
-
     "web": {
       "favicon": "./assets/favicon.png"
     },
-
     "plugins": [
       [
         "expo-camera",
@@ -59,14 +55,13 @@
         }
       ],
       "expo-secure-store",
-      "expo-localization",
-      "expo-in-app-purchases"
+      "expo-localization"
     ],
-
     "extra": {
       "eas": {
-        "projectId": "REPLACE_WITH_YOUR_EAS_PROJECT_ID"
+        "projectId": "683087a5-8263-464e-93a2-14c873d75bd7"
       }
-    }
+    },
+    "owner": "paulwebster44"
   }
 }
