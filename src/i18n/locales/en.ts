@@ -181,7 +181,7 @@ export default {
     commercial: {
       // No pricing or purchase language — App Store guidelines prohibit
       // directing users to an external URL to complete a purchase.
-      link: 'SolarSnap Commercial is for solar retailers and installers. Tap to contact us at hello@solarsnap.co.uk',
+      link: 'SolarSnap Commercial is for solar retailers and installers. Tap to contact us at info@solarsnap.co.uk',
     },
     tier: {
       basic: {

@@ -37,7 +37,7 @@ export type IAPProductId = (typeof IAP_PRODUCTS)[keyof typeof IAP_PRODUCTS];
  *   enquiry / contact link only, not a purchase link. We open a pre-filled
  *   mailto: so the user can get in touch; no price or purchase language is used.
  */
-export const COMMERCIAL_ENQUIRY_EMAIL = 'hello@solarsnap.co.uk';
+export const COMMERCIAL_ENQUIRY_EMAIL = 'info@solarsnap.co.uk';
 
 /** All product IDs as an array — passed to getProductsAsync() on startup. */
 export const ALL_PRODUCT_IDS: string[] = Object.values(IAP_PRODUCTS);

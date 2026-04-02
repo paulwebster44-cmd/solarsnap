@@ -1,0 +1,215 @@
+/* =============================================================
+   SolarSnap Design Tokens
+   Extracted from the SolarSnap mobile app (Expo / React Native)
+   Use these variables to keep the website visually consistent
+   with the app.
+   ============================================================= */
+
+:root {
+
+  /* -----------------------------------------------------------
+     BRAND COLOURS
+  ----------------------------------------------------------- */
+
+  --color-primary:          #f59e0b;  /* Main amber — buttons, highlights */
+  --color-primary-light:    #fef3c7;  /* Amber tint — icon backgrounds, badges */
+  --color-primary-dark:     #d97706;  /* Darker amber — hover states, accents */
+  --color-primary-darker:   #92400e;  /* Deep amber — disabled primary buttons */
+
+
+  /* -----------------------------------------------------------
+     VERDICT / SEMANTIC COLOURS
+  ----------------------------------------------------------- */
+
+  --color-excellent:        #16a34a;  /* Green  — Excellent verdict */
+  --color-good:             #ca8a04;  /* Gold   — Good verdict */
+  --color-fair:             #ea580c;  /* Orange — Fair verdict */
+  --color-poor:             #dc2626;  /* Red    — Poor verdict */
+
+
+  /* -----------------------------------------------------------
+     SUCCESS (green)
+  ----------------------------------------------------------- */
+
+  --color-success:          #16a34a;
+  --color-success-bg:       #f0fdf4;
+  --color-success-border:   #bbf7d0;
+  --color-success-text:     #166534;
+
+
+  /* -----------------------------------------------------------
+     ERROR / DANGER (red)
+  ----------------------------------------------------------- */
+
+  --color-error:            #dc2626;
+  --color-error-bg:         #fef2f2;
+  --color-error-border:     #fecaca;
+  --color-error-border-alt: #fca5a5;
+  --color-error-text:       #991b1b;
+
+
+  /* -----------------------------------------------------------
+     WARNING (yellow / amber)
+  ----------------------------------------------------------- */
+
+  --color-warning-bg:       #fef9c3;
+  --color-warning-text:     #713f12;
+
+
+  /* -----------------------------------------------------------
+     NEUTRAL — BACKGROUNDS
+  ----------------------------------------------------------- */
+
+  --color-bg-page:          #ffffff;
+  --color-bg-subtle:        #f9fafb;  /* Cards, secondary surfaces */
+  --color-bg-muted:         #f3f4f6;  /* Ultra-subtle borders, row dividers */
+
+
+  /* -----------------------------------------------------------
+     NEUTRAL — BORDERS
+  ----------------------------------------------------------- */
+
+  --color-border:           #e5e7eb;  /* Standard border */
+  --color-border-subtle:    #f3f4f6;  /* Row dividers */
+
+
+  /* -----------------------------------------------------------
+     NEUTRAL — TEXT
+  ----------------------------------------------------------- */
+
+  --color-text-primary:     #111827;  /* Headings, high-contrast text */
+  --color-text-body:        #374151;  /* Body copy */
+  --color-text-secondary:   #6b7280;  /* Labels, captions, secondary */
+  --color-text-tertiary:    #9ca3af;  /* Hints, notes */
+  --color-text-disabled:    #aaaaaa;
+
+
+  /* -----------------------------------------------------------
+     OVERLAY COLOURS (useful for hero/banner sections)
+  ----------------------------------------------------------- */
+
+  --color-overlay-light:    rgba(0, 0, 0, 0.40);
+  --color-overlay-medium:   rgba(0, 0, 0, 0.55);
+  --color-overlay-heavy:    rgba(0, 0, 0, 0.75);
+
+
+  /* -----------------------------------------------------------
+     TYPOGRAPHY — FONT FAMILY
+     The app uses React Native default (San Francisco on iOS,
+     Roboto on Android). For the web, use the same system stack.
+  ----------------------------------------------------------- */
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "Helvetica Neue", Arial, sans-serif;
+
+
+  /* -----------------------------------------------------------
+     TYPOGRAPHY — FONT SIZES
+  ----------------------------------------------------------- */
+
+  --text-xs:    11px;   /* Sensor labels, uppercase tags */
+  --text-sm:    13px;   /* Card titles, legends, coordinates */
+  --text-base:  15px;   /* Body copy, step text, row labels */
+  --text-md:    16px;   /* Inputs, permission text */
+  --text-lg:    17px;   /* Button text, retry button */
+  --text-xl:    18px;   /* Primary CTA button */
+  --text-2xl:   20px;   /* Modal titles */
+  --text-3xl:   26px;   /* Screen sub-titles (SetHomeLocation) */
+  --text-4xl:   28px;   /* Screen titles (Account) */
+  --text-5xl:   30px;   /* Auth screen titles */
+  --text-6xl:   36px;   /* App name / hero title */
+  --text-7xl:   48px;   /* Verdict display text */
+
+
+  /* -----------------------------------------------------------
+     TYPOGRAPHY — FONT WEIGHTS
+  ----------------------------------------------------------- */
+
+  --font-normal:      400;
+  --font-semibold:    600;
+  --font-bold:        700;
+  --font-extrabold:   800;
+
+
+  /* -----------------------------------------------------------
+     TYPOGRAPHY — LINE HEIGHTS
+  ----------------------------------------------------------- */
+
+  --leading-tight:    20px;   /* Instruction banners */
+  --leading-normal:   22px;   /* Body copy, step text */
+  --leading-relaxed:  24px;   /* Tagline, permissions */
+
+
+  /* -----------------------------------------------------------
+     BORDER RADIUS
+  ----------------------------------------------------------- */
+
+  --radius-xs:    3px;    /* Progress bar */
+  --radius-sm:    8px;    /* Badges, inputs, error banners */
+  --radius-md:    12px;   /* Cards, step rows */
+  --radius-lg:    20px;   /* Modal sheet, account button */
+  --radius-pill:  9999px; /* Full pill buttons (CTAs) */
+  --radius-circle: 50%;   /* Icon circles */
+
+
+  /* -----------------------------------------------------------
+     SPACING SCALE
+     Mirrors the padding/gap values used throughout the app.
+  ----------------------------------------------------------- */
+
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-7:   28px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+
+
+  /* -----------------------------------------------------------
+     SHADOWS
+     Matches the subtle card elevation used across the app.
+  ----------------------------------------------------------- */
+
+  --shadow-card:  0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+
+  /* -----------------------------------------------------------
+     BORDERS
+  ----------------------------------------------------------- */
+
+  --border-thin:   1px solid var(--color-border);
+  --border-medium: 2px solid var(--color-primary);
+
+
+  /* -----------------------------------------------------------
+     COMPONENT SHORTCUTS
+     Ready-made values for the most common UI patterns.
+  ----------------------------------------------------------- */
+
+  /* Primary CTA button (matches app's orange pill buttons) */
+  --btn-primary-bg:         var(--color-primary);
+  --btn-primary-text:       #ffffff;
+  --btn-primary-radius:     var(--radius-pill);
+  --btn-primary-padding:    18px 48px;
+  --btn-primary-font-size:  var(--text-xl);
+  --btn-primary-weight:     var(--font-bold);
+
+  /* Input fields */
+  --input-border:           var(--color-border);
+  --input-bg:               var(--color-bg-subtle);
+  --input-radius:           var(--radius-sm);
+  --input-padding:          14px 16px;
+  --input-font-size:        var(--text-md);
+
+  /* Cards */
+  --card-bg:                var(--color-bg-page);
+  --card-radius:            var(--radius-md);
+  --card-padding:           var(--space-4);
+  --card-shadow:            var(--shadow-card);
+
+}

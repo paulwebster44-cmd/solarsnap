@@ -4,7 +4,7 @@
 
 **Last updated:** April 2026
 **Applies to:** SolarSnap iOS and Android app
-**Data controller:** [Your name / company name], reachable at hello@solarsnap.co.uk
+**Data controller:** [Your name / company name], reachable at info@solarsnap.co.uk
 
 ---
 
@@ -77,11 +77,11 @@ Because SolarSnap is based in the UK and its users are primarily in the UK, UK d
 
 - **Access** the personal data we hold about you
 - **Correct** inaccurate data (for example, updating your home location, which you can do in the Account screen at any time)
-- **Delete** your data — to request deletion of your account and all associated data, email us at hello@solarsnap.co.uk
+- **Delete** your data — to request deletion of your account and all associated data, email us at info@solarsnap.co.uk
 - **Portability** — to receive a copy of your data in a common format on request
 - **Object** to processing — in practice the only personal data we process is what is strictly necessary to run the app
 
-To exercise any of these rights, contact us at **hello@solarsnap.co.uk**.
+To exercise any of these rights, contact us at **info@solarsnap.co.uk**.
 
 If you are unhappy with how we handle your data you also have the right to lodge a complaint with the Information Commissioner's Office (ICO) at ico.org.uk.
 
@@ -102,5 +102,5 @@ If we make significant changes to this policy we will update the "Last updated" 
 ## Contact
 
 For any privacy-related questions or data requests:
-**Email:** hello@solarsnap.co.uk
+**Email:** info@solarsnap.co.uk
 **Website:** https://solarsnap.co.uk
