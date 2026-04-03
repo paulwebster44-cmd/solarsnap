@@ -323,64 +323,62 @@ export default function AssessmentScreen() {
 
   return (
     <View style={s.container}>
-      <CameraView ref={cameraRef} style={s.camera} facing="back">
+      <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />
 
-        {/* Instruction banner */}
-        <View style={s.instructionBanner}>
-          <Text style={s.instructionText}>{t('assessment.instruction')}</Text>
+      {/* Instruction banner */}
+      <View style={s.instructionBanner}>
+        <Text style={s.instructionText}>{t('assessment.instruction')}</Text>
+      </View>
+
+      {/* Crosshair */}
+      <View style={s.crosshairContainer} pointerEvents="none">
+        <View style={s.crosshairH} />
+        <View style={s.crosshairV} />
+      </View>
+
+      {/* Sensor readings */}
+      <View style={s.readingsContainer}>
+        <View style={s.readingBox}>
+          <Text style={s.readingLabel}>{t('assessment.facing')}</Text>
+          <Text style={s.readingValue}>{bearing}°</Text>
+          <Text style={s.readingUnit}>{bearingToLabel(bearing)}</Text>
         </View>
-
-        {/* Crosshair */}
-        <View style={s.crosshairContainer} pointerEvents="none">
-          <View style={s.crosshairH} />
-          <View style={s.crosshairV} />
+        <View style={s.readingDivider} />
+        <View style={s.readingBox}>
+          <Text style={s.readingLabel}>{t('assessment.tilt')}</Text>
+          <Text style={s.readingValue}>{tilt}°</Text>
+          <Text style={s.readingUnit}>{t('assessment.tiltUnit')}</Text>
         </View>
+      </View>
 
-        {/* Sensor readings */}
-        <View style={s.readingsContainer}>
-          <View style={s.readingBox}>
-            <Text style={s.readingLabel}>{t('assessment.facing')}</Text>
-            <Text style={s.readingValue}>{bearing}°</Text>
-            <Text style={s.readingUnit}>{bearingToLabel(bearing)}</Text>
-          </View>
-          <View style={s.readingDivider} />
-          <View style={s.readingBox}>
-            <Text style={s.readingLabel}>{t('assessment.tilt')}</Text>
-            <Text style={s.readingValue}>{tilt}°</Text>
-            <Text style={s.readingUnit}>{t('assessment.tiltUnit')}</Text>
-          </View>
+      {/* Error */}
+      {errorMessage && (
+        <View style={s.errorBanner}>
+          <Text style={s.errorText}>{errorMessage}</Text>
         </View>
+      )}
 
-        {/* Error */}
-        {errorMessage && (
-          <View style={s.errorBanner}>
-            <Text style={s.errorText}>{errorMessage}</Text>
-          </View>
-        )}
-
-        {/* Loading overlay */}
-        {isLoading && (
-          <View style={s.loadingOverlay}>
-            <ActivityIndicator size="large" color="#f59e0b" />
-            <Text style={s.loadingText}>{loadingStage}</Text>
-          </View>
-        )}
-
-        {/* Assess button */}
-        <View style={s.bottomBar}>
-          <TouchableOpacity
-            style={[s.assessBtn, isLoading && s.assessBtnDisabled]}
-            onPress={handleAssess}
-            disabled={isLoading}
-          >
-            {isLoading
-              ? <ActivityIndicator color="#fff" />
-              : <Text style={s.assessBtnText}>{t('assessment.assess')}</Text>
-            }
-          </TouchableOpacity>
+      {/* Loading overlay */}
+      {isLoading && (
+        <View style={s.loadingOverlay}>
+          <ActivityIndicator size="large" color="#f59e0b" />
+          <Text style={s.loadingText}>{loadingStage}</Text>
         </View>
+      )}
 
-      </CameraView>
+      {/* Assess button */}
+      <View style={s.bottomBar}>
+        <TouchableOpacity
+          style={[s.assessBtn, isLoading && s.assessBtnDisabled]}
+          onPress={handleAssess}
+          disabled={isLoading}
+        >
+          {isLoading
+            ? <ActivityIndicator color="#fff" />
+            : <Text style={s.assessBtnText}>{t('assessment.assess')}</Text>
+          }
+        </TouchableOpacity>
+      </View>
 
       {/* Borderline prompt modal */}
       <Modal visible={showBorderlinePrompt} transparent animationType="slide">
@@ -448,7 +446,6 @@ export default function AssessmentScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
-  camera: { flex: 1 },
   centred: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, backgroundColor: '#111' },
   permText: { color: '#fff', textAlign: 'center', marginBottom: 24, fontSize: 16, lineHeight: 24 },
   btn: { backgroundColor: '#f59e0b', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8 },
