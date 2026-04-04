@@ -12,7 +12,7 @@ export default {
     account: 'Account',
   },
   assessment: {
-    instruction: 'Tenere in verticale. Punta verso il cielo nella direzione del pannello, inclinato all'angolo previsto, poi tocca Valuta.',
+    instruction: 'Tenere in verticale. Punta verso il cielo nella direzione del pannello, inclinato all\'angolo previsto, poi tocca Valuta.',
     facing: 'ORIENTAMENTO',
     tilt: 'INCLINAZIONE',
     tiltUnit: 'dalla verticale',

@@ -12,7 +12,7 @@ export default {
     account: 'Compte',
   },
   assessment: {
-    instruction: 'Tenez en mode portrait. Pointez vers le ciel dans la direction du panneau, incliné à l'angle prévu, puis appuyez sur Évaluer.',
+    instruction: 'Tenez en mode portrait. Pointez vers le ciel dans la direction du panneau, incliné à l\'angle prévu, puis appuyez sur Évaluer.',
     facing: 'ORIENTATION',
     tilt: 'INCLINAISON',
     tiltUnit: 'depuis la verticale',
