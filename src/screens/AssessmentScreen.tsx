@@ -26,6 +26,7 @@ import {
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Location from 'expo-location';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { Accelerometer } from 'expo-sensors';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -52,6 +53,35 @@ function calcTilt(x: number, y: number, z: number): number {
   return Math.min(90, Math.max(0, Math.round(tiltDeg)));
 }
 
+/**
+ * Returns the degrees of clockwise screen rotation from natural portrait.
+ *
+ * watchHeadingAsync does NOT account for screen orientation — it always
+ * measures relative to the device's hardware portrait axis. We must subtract
+ * the screen rotation ourselves to obtain the true compass bearing.
+ *
+ * Additionally the raw value is 180° offset from expected (it reads the
+ * "coming from" direction rather than "pointing toward"). The full correction:
+ *
+ *   corrected = ((raw + 180 − screenRotationDeg) % 360 + 360) % 360
+ *
+ * Verified against 4 cardinal directions × portrait and landscape right:
+ *   Portrait  N→0° E→90° S→180° W→270° ✓
+ *   Landscape N→0° E→90° S→180° W→270° ✓
+ */
+function screenRotationDeg(orientation: ScreenOrientation.Orientation): number {
+  switch (orientation) {
+    case ScreenOrientation.Orientation.LANDSCAPE_RIGHT: return 90;   // 90° CW
+    case ScreenOrientation.Orientation.PORTRAIT_DOWN:   return 180;
+    case ScreenOrientation.Orientation.LANDSCAPE_LEFT:  return 270;  // 90° CCW
+    default:                                            return 0;    // PORTRAIT_UP
+  }
+}
+
+function applyOrientationCorrection(rawHeading: number, rotationDeg: number): number {
+  return ((rawHeading + 180 - rotationDeg) % 360 + 360) % 360;
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function AssessmentScreen() {
@@ -64,6 +94,7 @@ export default function AssessmentScreen() {
   const [locationGranted, setLocationGranted] = useState(false);
   const [bearing, setBearing] = useState(0);
   const [tilt, setTilt] = useState(0);
+  const [orientationDeg, setOrientationDeg] = useState(0);
 
   const [loadingStage, setLoadingStage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -93,6 +124,18 @@ export default function AssessmentScreen() {
     })();
   }, []);
 
+  // ── Screen orientation ────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    ScreenOrientation.getOrientationAsync().then((o) => {
+      setOrientationDeg(screenRotationDeg(o));
+    });
+    const sub = ScreenOrientation.addOrientationChangeListener((e) => {
+      setOrientationDeg(screenRotationDeg(e.orientationInfo.orientation));
+    });
+    return () => ScreenOrientation.removeOrientationChangeListener(sub);
+  }, []);
+
   // ── Compass heading ──────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -100,11 +143,12 @@ export default function AssessmentScreen() {
     if (!locationGranted) return;
     (async () => {
       sub = await Location.watchHeadingAsync((h) => {
-        setBearing(Math.round(h.trueHeading >= 0 ? h.trueHeading : h.magHeading));
+        const raw = h.trueHeading >= 0 ? h.trueHeading : h.magHeading;
+        setBearing(Math.round(applyOrientationCorrection(raw, orientationDeg)));
       });
     })();
     return () => { sub?.remove(); };
-  }, [locationGranted]);
+  }, [locationGranted, orientationDeg]);
 
   // ── Accelerometer (tilt) ─────────────────────────────────────────────────────
 
