@@ -101,8 +101,11 @@ export default function AssessmentScreen() {
     if (!locationGranted) return;
     (async () => {
       sub = await Location.watchHeadingAsync((h) => {
-        const raw = h.trueHeading >= 0 ? h.trueHeading : h.magHeading;
-        setBearing(Math.round(raw));
+        // Use magHeading — it comes directly from the magnetometer and is
+        // always valid. trueHeading requires a GPS fix + declination data and
+        // returns 0.0 (not -1) when unavailable on Android, which makes the
+        // >= 0 fallback guard unreliable.
+        setBearing(Math.round(h.magHeading));
       });
     })();
     return () => { sub?.remove(); };
