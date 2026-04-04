@@ -65,7 +65,6 @@ export default function AssessmentScreen() {
   const [locationGranted, setLocationGranted] = useState(false);
   const [bearing, setBearing] = useState(0);
   const [tilt, setTilt] = useState(0);
-  const [debugHeading, setDebugHeading] = useState({ mag: 0, tru: -1 });
 
   const [loadingStage, setLoadingStage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -102,8 +101,9 @@ export default function AssessmentScreen() {
     if (!locationGranted) return;
     (async () => {
       sub = await Location.watchHeadingAsync((h) => {
-        setDebugHeading({ mag: h.magHeading, tru: h.trueHeading });
-        setBearing(Math.round(h.magHeading));
+        // Raw magHeading is 180° off on this platform — the API reports the
+        // direction the screen faces rather than the direction the camera faces.
+        setBearing(Math.round((h.magHeading + 180) % 360));
       });
     })();
     return () => { sub?.remove(); };
@@ -361,10 +361,6 @@ export default function AssessmentScreen() {
         </View>
       )}
 
-      {/* DEBUG — remove before release */}
-      <View style={s.debugBanner}>
-        <Text style={s.debugText}>mag:{debugHeading.mag.toFixed(1)}° true:{debugHeading.tru.toFixed(1)}°</Text>
-      </View>
 
       {/* Loading overlay */}
       {isLoading && (
@@ -483,8 +479,6 @@ const s = StyleSheet.create({
   readingDivider: { width: 1, height: 48, backgroundColor: 'rgba(255,255,255,0.2)', marginHorizontal: 16 },
 
   errorBanner: { backgroundColor: 'rgba(220,38,38,0.85)', margin: 16, padding: 12, borderRadius: 8 },
-  debugBanner: { backgroundColor: 'rgba(0,0,0,0.7)', margin: 8, padding: 8, borderRadius: 6, alignItems: 'center' },
-  debugText: { color: '#00ff00', fontSize: 13, fontFamily: 'monospace' },
   errorText: { color: '#fff', textAlign: 'center', fontSize: 14 },
 
   loadingOverlay: {
