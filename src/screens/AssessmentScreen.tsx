@@ -26,7 +26,6 @@ import {
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Location from 'expo-location';
-import * as ScreenOrientation from 'expo-screen-orientation';
 import { Accelerometer } from 'expo-sensors';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -54,30 +53,35 @@ function calcTilt(x: number, y: number, z: number): number {
 }
 
 /**
- * Returns the degrees of clockwise screen rotation from natural portrait.
+ * Derives the screen's clockwise rotation from natural portrait using the
+ * accelerometer gravity vector — no native orientation module required.
  *
- * watchHeadingAsync does NOT account for screen orientation — it always
- * measures relative to the device's hardware portrait axis. We must subtract
- * the screen rotation ourselves to obtain the true compass bearing.
+ * When |x| > |y|: phone is landscape.  x > 0 → landscape right (90° CW).
+ * When |y| >= |x|: phone is portrait.  y < 0 → portrait up (0°).
  *
- * Additionally the raw value is 180° offset from expected (it reads the
- * "coming from" direction rather than "pointing toward"). The full correction:
- *
- *   corrected = ((raw + 180 − screenRotationDeg) % 360 + 360) % 360
- *
- * Verified against 4 cardinal directions × portrait and landscape right:
- *   Portrait  N→0° E→90° S→180° W→270° ✓
- *   Landscape N→0° E→90° S→180° W→270° ✓
+ * Returns the previous value unchanged when both axes are near-zero (phone
+ * is nearly flat), avoiding noise when the compass is unreliable anyway.
  */
-function screenRotationDeg(orientation: ScreenOrientation.Orientation): number {
-  switch (orientation) {
-    case ScreenOrientation.Orientation.LANDSCAPE_RIGHT: return 90;   // 90° CW
-    case ScreenOrientation.Orientation.PORTRAIT_DOWN:   return 180;
-    case ScreenOrientation.Orientation.LANDSCAPE_LEFT:  return 270;  // 90° CCW
-    default:                                            return 0;    // PORTRAIT_UP
+function calcOrientationDeg(x: number, y: number, prev: number): number {
+  if (Math.abs(x) < 0.15 && Math.abs(y) < 0.15) return prev; // flat — keep last
+  if (Math.abs(x) > Math.abs(y)) {
+    return x > 0 ? 90 : 270;  // landscape right / landscape left
   }
+  return y < 0 ? 0 : 180;    // portrait up / portrait down
 }
 
+/**
+ * Corrects the raw watchHeadingAsync value for screen orientation.
+ *
+ * watchHeadingAsync does NOT account for screen rotation and also carries
+ * a 180° base offset (it reads the "coming from" bearing, not "pointing to").
+ *
+ *   corrected = ((raw + 180 − orientationDeg) % 360 + 360) % 360
+ *
+ * Verified against 4 cardinal directions × portrait and landscape right:
+ *   Portrait:        N→0°  E→90°  S→180°  W→270°  ✓
+ *   Landscape right: N→0°  E→90°  S→180°  W→270°  ✓
+ */
 function applyOrientationCorrection(rawHeading: number, rotationDeg: number): number {
   return ((rawHeading + 180 - rotationDeg) % 360 + 360) % 360;
 }
@@ -124,18 +128,6 @@ export default function AssessmentScreen() {
     })();
   }, []);
 
-  // ── Screen orientation ────────────────────────────────────────────────────────
-
-  useEffect(() => {
-    ScreenOrientation.getOrientationAsync().then((o) => {
-      setOrientationDeg(screenRotationDeg(o));
-    });
-    const sub = ScreenOrientation.addOrientationChangeListener((e) => {
-      setOrientationDeg(screenRotationDeg(e.orientationInfo.orientation));
-    });
-    return () => ScreenOrientation.removeOrientationChangeListener(sub);
-  }, []);
-
   // ── Compass heading ──────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -150,11 +142,14 @@ export default function AssessmentScreen() {
     return () => { sub?.remove(); };
   }, [locationGranted, orientationDeg]);
 
-  // ── Accelerometer (tilt) ─────────────────────────────────────────────────────
+  // ── Accelerometer (tilt + orientation) ───────────────────────────────────────
 
   useEffect(() => {
     Accelerometer.setUpdateInterval(200);
-    const sub = Accelerometer.addListener(({ x, y, z }) => setTilt(calcTilt(x, y, z)));
+    const sub = Accelerometer.addListener(({ x, y, z }) => {
+      setTilt(calcTilt(x, y, z));
+      setOrientationDeg((prev) => calcOrientationDeg(x, y, prev));
+    });
     return () => sub.remove();
   }, []);
 
