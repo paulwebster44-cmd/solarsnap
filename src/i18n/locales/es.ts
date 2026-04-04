@@ -12,7 +12,7 @@ export default {
     account: 'Cuenta',
   },
   assessment: {
-    instruction: 'Apunte al cielo en la dirección de su panel, inclinado al ángulo previsto, y pulse Evaluar.',
+    instruction: 'Sostenga en vertical. Apunte al cielo en la dirección de su panel, inclinado al ángulo previsto, y pulse Evaluar.',
     facing: 'ORIENTACIÓN',
     tilt: 'INCLINACIÓN',
     tiltUnit: 'desde la vertical',

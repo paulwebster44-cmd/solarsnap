@@ -21,7 +21,7 @@ export default {
     account: 'Account',
   },
   assessment: {
-    instruction: 'Point at the sky in the direction your panel will face, tilted to match the panel angle, then tap Assess.',
+    instruction: 'Hold in portrait mode. Point at the sky in the direction your panel will face, tilted to match the panel angle, then tap Assess.',
     facing: 'FACING',
     tilt: 'TILT',
     tiltUnit: 'from vertical',

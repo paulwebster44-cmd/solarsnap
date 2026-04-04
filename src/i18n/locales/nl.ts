@@ -12,7 +12,7 @@ export default {
     account: 'Account',
   },
   assessment: {
-    instruction: 'Richt naar de lucht in de richting van uw paneel, gekanteld op de voorgenomen hoek, en tik dan op Beoordelen.',
+    instruction: 'Houd verticaal. Richt naar de lucht in de richting van uw paneel, gekanteld op de voorgenomen hoek, en tik dan op Beoordelen.',
     facing: 'RICHTING',
     tilt: 'KANTELING',
     tiltUnit: 'van verticaal',

@@ -52,40 +52,6 @@ function calcTilt(x: number, y: number, z: number): number {
   return Math.min(90, Math.max(0, Math.round(tiltDeg)));
 }
 
-/**
- * Derives the screen's clockwise rotation from natural portrait using the
- * accelerometer gravity vector — no native orientation module required.
- *
- * When |x| > |y|: phone is landscape.  x > 0 → landscape right (90° CW).
- * When |y| >= |x|: phone is portrait.  y < 0 → portrait up (0°).
- *
- * Returns the previous value unchanged when both axes are near-zero (phone
- * is nearly flat), avoiding noise when the compass is unreliable anyway.
- */
-function calcOrientationDeg(x: number, y: number, prev: number): number {
-  if (Math.abs(x) < 0.15 && Math.abs(y) < 0.15) return prev; // flat — keep last
-  if (Math.abs(x) > Math.abs(y)) {
-    return x > 0 ? 90 : 270;  // landscape right / landscape left
-  }
-  return y < 0 ? 0 : 180;    // portrait up / portrait down
-}
-
-/**
- * Corrects the raw watchHeadingAsync value for screen orientation.
- *
- * watchHeadingAsync returns the correct bearing in portrait-up but does NOT
- * account for screen rotation. We subtract the screen rotation to compensate:
- *
- *   corrected = ((raw − orientationDeg) % 360 + 360) % 360
- *
- * Portrait up (0°): corrected = raw            (no change)
- * Landscape right  (90° CW):  corrected = raw − 90
- * Portrait down   (180°):     corrected = raw − 180
- * Landscape left  (270° CCW): corrected = raw + 90
- */
-function applyOrientationCorrection(rawHeading: number, rotationDeg: number): number {
-  return ((rawHeading - rotationDeg) % 360 + 360) % 360;
-}
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -99,7 +65,6 @@ export default function AssessmentScreen() {
   const [locationGranted, setLocationGranted] = useState(false);
   const [bearing, setBearing] = useState(0);
   const [tilt, setTilt] = useState(0);
-  const [orientationDeg, setOrientationDeg] = useState(0);
 
   const [loadingStage, setLoadingStage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -137,20 +102,17 @@ export default function AssessmentScreen() {
     (async () => {
       sub = await Location.watchHeadingAsync((h) => {
         const raw = h.trueHeading >= 0 ? h.trueHeading : h.magHeading;
-        setBearing(Math.round(applyOrientationCorrection(raw, orientationDeg)));
+        setBearing(Math.round(raw));
       });
     })();
     return () => { sub?.remove(); };
-  }, [locationGranted, orientationDeg]);
+  }, [locationGranted]);
 
-  // ── Accelerometer (tilt + orientation) ───────────────────────────────────────
+  // ── Accelerometer (tilt) ─────────────────────────────────────────────────────
 
   useEffect(() => {
     Accelerometer.setUpdateInterval(200);
-    const sub = Accelerometer.addListener(({ x, y, z }) => {
-      setTilt(calcTilt(x, y, z));
-      setOrientationDeg((prev) => calcOrientationDeg(x, y, prev));
-    });
+    const sub = Accelerometer.addListener(({ x, y, z }) => setTilt(calcTilt(x, y, z)));
     return () => sub.remove();
   }, []);
 

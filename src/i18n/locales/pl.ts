@@ -12,7 +12,7 @@ export default {
     account: 'Konto',
   },
   assessment: {
-    instruction: 'Skieruj telefon w stronę nieba w kierunku panelu, przechylony pod zamierzonym kątem, a następnie naciśnij Oceń.',
+    instruction: 'Trzymaj pionowo. Skieruj telefon w stronę nieba w kierunku panelu, przechylony pod zamierzonym kątem, a następnie naciśnij Oceń.',
     facing: 'KIERUNEK',
     tilt: 'POCHYLENIE',
     tiltUnit: 'od pionu',

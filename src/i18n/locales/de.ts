@@ -12,7 +12,7 @@ export default {
     account: 'Konto',
   },
   assessment: {
-    instruction: 'Richten Sie das Telefon in Richtung Himmel, in der Richtung und dem Winkel des Panels, und tippen Sie dann auf Bewerten.',
+    instruction: 'Hochformat halten. Richten Sie das Telefon in Richtung Himmel, in der Richtung und dem Winkel des Panels, und tippen Sie dann auf Bewerten.',
     facing: 'RICHTUNG',
     tilt: 'NEIGUNG',
     tiltUnit: 'von der Senkrechten',
