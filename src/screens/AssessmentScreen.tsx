@@ -27,7 +27,7 @@ import {
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Location from 'expo-location';
 import { Accelerometer } from 'expo-sensors';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
 import { assessSuitability } from '../services/solar/solarSuitability';
@@ -65,6 +65,12 @@ export default function AssessmentScreen() {
   const [locationGranted, setLocationGranted] = useState(false);
   const [bearing, setBearing] = useState(0);
   const [tilt, setTilt] = useState(0);
+  const [isFocused, setIsFocused] = useState(true);
+
+  useFocusEffect(useCallback(() => {
+    setIsFocused(true);
+    return () => setIsFocused(false);
+  }, []));
 
   const [loadingStage, setLoadingStage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -326,7 +332,7 @@ export default function AssessmentScreen() {
 
   return (
     <View style={s.container}>
-      <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />
+      {isFocused && <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />}
 
       {/* Instruction banner */}
       <View style={s.instructionBanner}>
