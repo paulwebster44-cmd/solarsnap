@@ -34,6 +34,14 @@
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "REPLACE_WITH_YOUR_ANON_KEY",
         "EXPO_PUBLIC_HF_API_KEY": "REPLACE_WITH_YOUR_HF_KEY"
       }
+    },
+    "development-simulator": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "environment": "development"
     }
   },
   "submit": {

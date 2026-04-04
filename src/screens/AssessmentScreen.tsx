@@ -160,6 +160,7 @@ export default function AssessmentScreen() {
         await new Promise((resolve) => setTimeout(resolve, err.estimatedSeconds * 1000));
         obstruction = await analyseSkyPhoto(photoUri);
       } else {
+        console.error('[SkyAnalysis] Failed:', err);
         setLoadingStage(null);
         // Deduct credit even when sky analysis fails — solar result is still valid
         try { await deductCredit(); await refreshProfile(); } catch { /* best-effort */ }

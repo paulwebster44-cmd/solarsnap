@@ -15,14 +15,14 @@
  * the portion of sky the sun actually travels through.
  */
 
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { decodePNGMask, countMaskPixels } from './pngDecoder';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const HF_MODEL = 'nvidia/segformer-b2-finetuned-ade-512-512';
-const HF_API_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`;
+const HF_API_URL = `https://router.huggingface.co/hf-inference/models/${HF_MODEL}`;
 
 /**
  * Maximum image dimension sent to the API.
@@ -86,7 +86,7 @@ export async function analyseSkyPhoto(photoUri: string): Promise<ObstructionAnal
 
   // ── Step 2: Read as base64 and send to HF Inference API ───────────────────
   const base64Image = await FileSystem.readAsStringAsync(resized.uri, {
-    encoding: FileSystem.EncodingType.Base64,
+    encoding: 'base64' as any,
   });
 
   const apiKey = process.env.EXPO_PUBLIC_HF_API_KEY;
@@ -100,7 +100,8 @@ export async function analyseSkyPhoto(photoUri: string): Promise<ObstructionAnal
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ inputs: base64Image }),
+    // HF image models require a data URI, not a raw base64 string
+    body: JSON.stringify({ inputs: `data:image/jpeg;base64,${base64Image}` }),
   });
 
   // Handle model cold-start (503) — HF spins down free-tier models after idle
