@@ -65,6 +65,7 @@ export default function AssessmentScreen() {
   const [locationGranted, setLocationGranted] = useState(false);
   const [bearing, setBearing] = useState(0);
   const [tilt, setTilt] = useState(0);
+  const [isLandscape, setIsLandscape] = useState(false);
   const [isFocused, setIsFocused] = useState(true);
 
   useFocusEffect(useCallback(() => {
@@ -119,7 +120,12 @@ export default function AssessmentScreen() {
 
   useEffect(() => {
     Accelerometer.setUpdateInterval(200);
-    const sub = Accelerometer.addListener(({ x, y, z }) => setTilt(calcTilt(x, y, z)));
+    const sub = Accelerometer.addListener(({ x, y, z }) => {
+      setTilt(calcTilt(x, y, z));
+      // Landscape when |x| clearly exceeds |y| — works even when tilted toward sky.
+      // Threshold of 0.2 adds hysteresis to avoid flickering at the boundary.
+      setIsLandscape(Math.abs(x) > Math.abs(y) + 0.2);
+    });
     return () => sub.remove();
   }, []);
 
@@ -368,6 +374,14 @@ export default function AssessmentScreen() {
       )}
 
 
+      {/* Landscape warning */}
+      {isLandscape && (
+        <View style={s.landscapeOverlay}>
+          <Text style={s.landscapeIcon}>↕</Text>
+          <Text style={s.landscapeText}>{t('assessment.holdPortrait')}</Text>
+        </View>
+      )}
+
       {/* Loading overlay */}
       {isLoading && (
         <View style={s.loadingOverlay}>
@@ -379,9 +393,9 @@ export default function AssessmentScreen() {
       {/* Assess button */}
       <View style={s.bottomBar}>
         <TouchableOpacity
-          style={[s.assessBtn, isLoading && s.assessBtnDisabled]}
+          style={[s.assessBtn, (isLoading || isLandscape) && s.assessBtnDisabled]}
           onPress={handleAssess}
-          disabled={isLoading}
+          disabled={isLoading || isLandscape}
         >
           {isLoading
             ? <ActivityIndicator color="#fff" />
@@ -485,6 +499,13 @@ const s = StyleSheet.create({
   readingDivider: { width: 1, height: 48, backgroundColor: 'rgba(255,255,255,0.2)', marginHorizontal: 16 },
 
   errorBanner: { backgroundColor: 'rgba(220,38,38,0.85)', margin: 16, padding: 12, borderRadius: 8 },
+  landscapeOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.82)',
+    alignItems: 'center', justifyContent: 'center', padding: 40,
+  },
+  landscapeIcon: { fontSize: 48, color: '#f59e0b', marginBottom: 16 },
+  landscapeText: { color: '#fff', fontSize: 18, fontWeight: '700', textAlign: 'center', lineHeight: 28 },
   errorText: { color: '#fff', textAlign: 'center', fontSize: 14 },
 
   loadingOverlay: {

@@ -22,6 +22,7 @@ export default {
   },
   assessment: {
     instruction: 'Hold in portrait mode. Point at the sky in the direction your panel will face, tilted to match the panel angle, then tap Assess.',
+    holdPortrait: 'Please rotate your phone to portrait mode',
     facing: 'FACING',
     tilt: 'TILT',
     tiltUnit: 'from vertical',

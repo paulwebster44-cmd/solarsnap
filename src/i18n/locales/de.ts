@@ -13,6 +13,7 @@ export default {
   },
   assessment: {
     instruction: 'Hochformat halten. Richten Sie das Telefon in Richtung Himmel, in der Richtung und dem Winkel des Panels, und tippen Sie dann auf Bewerten.',
+    holdPortrait: 'Bitte drehen Sie das Telefon in das Hochformat',
     facing: 'RICHTUNG',
     tilt: 'NEIGUNG',
     tiltUnit: 'von der Senkrechten',

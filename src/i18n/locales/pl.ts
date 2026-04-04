@@ -13,6 +13,7 @@ export default {
   },
   assessment: {
     instruction: 'Trzymaj pionowo. Skieruj telefon w stronę nieba w kierunku panelu, przechylony pod zamierzonym kątem, a następnie naciśnij Oceń.',
+    holdPortrait: 'Proszę obrócić telefon do trybu pionowego',
     facing: 'KIERUNEK',
     tilt: 'POCHYLENIE',
     tiltUnit: 'od pionu',

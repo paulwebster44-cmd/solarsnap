@@ -13,6 +13,7 @@ export default {
   },
   assessment: {
     instruction: 'Tenere in verticale. Punta verso il cielo nella direzione del pannello, inclinato all\'angolo previsto, poi tocca Valuta.',
+    holdPortrait: 'Ruota il telefono in modalità verticale',
     facing: 'ORIENTAMENTO',
     tilt: 'INCLINAZIONE',
     tiltUnit: 'dalla verticale',

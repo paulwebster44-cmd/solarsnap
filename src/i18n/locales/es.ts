@@ -13,6 +13,7 @@ export default {
   },
   assessment: {
     instruction: 'Sostenga en vertical. Apunte al cielo en la dirección de su panel, inclinado al ángulo previsto, y pulse Evaluar.',
+    holdPortrait: 'Por favor, gire el teléfono a modo vertical',
     facing: 'ORIENTACIÓN',
     tilt: 'INCLINACIÓN',
     tiltUnit: 'desde la vertical',

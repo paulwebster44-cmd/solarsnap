@@ -13,6 +13,7 @@ export default {
   },
   assessment: {
     instruction: 'Houd verticaal. Richt naar de lucht in de richting van uw paneel, gekanteld op de voorgenomen hoek, en tik dan op Beoordelen.',
+    holdPortrait: 'Draai uw telefoon naar de staande stand',
     facing: 'RICHTING',
     tilt: 'KANTELING',
     tiltUnit: 'van verticaal',
