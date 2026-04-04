@@ -73,17 +73,18 @@ function calcOrientationDeg(x: number, y: number, prev: number): number {
 /**
  * Corrects the raw watchHeadingAsync value for screen orientation.
  *
- * watchHeadingAsync does NOT account for screen rotation and also carries
- * a 180° base offset (it reads the "coming from" bearing, not "pointing to").
+ * watchHeadingAsync returns the correct bearing in portrait-up but does NOT
+ * account for screen rotation. We subtract the screen rotation to compensate:
  *
- *   corrected = ((raw + 180 − orientationDeg) % 360 + 360) % 360
+ *   corrected = ((raw − orientationDeg) % 360 + 360) % 360
  *
- * Verified against 4 cardinal directions × portrait and landscape right:
- *   Portrait:        N→0°  E→90°  S→180°  W→270°  ✓
- *   Landscape right: N→0°  E→90°  S→180°  W→270°  ✓
+ * Portrait up (0°): corrected = raw            (no change)
+ * Landscape right  (90° CW):  corrected = raw − 90
+ * Portrait down   (180°):     corrected = raw − 180
+ * Landscape left  (270° CCW): corrected = raw + 90
  */
 function applyOrientationCorrection(rawHeading: number, rotationDeg: number): number {
-  return ((rawHeading + 180 - rotationDeg) % 360 + 360) % 360;
+  return ((rawHeading - rotationDeg) % 360 + 360) % 360;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
