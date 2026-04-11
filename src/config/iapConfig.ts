@@ -42,4 +42,4 @@ export const ALL_PRODUCT_IDS: string[] = Object.values(IAP_PRODUCTS);
  * These are safe to ship in the app bundle (they are public keys, not secret keys).
  */
 export const REVENUECAT_IOS_KEY = 'appl_FFsSUfaMfLZxwoiKPniUPPsnGiU';
-export const REVENUECAT_ANDROID_KEY = 'REPLACE_WITH_REVENUECAT_ANDROID_KEY';
+export const REVENUECAT_ANDROID_KEY = 'goog_HsNMUuVzlklMYmdNmequGsPeBzN';
