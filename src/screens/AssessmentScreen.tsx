@@ -108,9 +108,13 @@ export default function AssessmentScreen() {
     if (!locationGranted) return;
     (async () => {
       sub = await Location.watchHeadingAsync((h) => {
-        // Raw magHeading is 180° off on this platform — the API reports the
-        // direction the screen faces rather than the direction the camera faces.
-        setBearing(Math.round((h.magHeading + 180) % 360));
+        // Android (at least on some devices) reports the direction the screen
+        // faces rather than the camera, so magHeading is 180° off. iOS
+        // CoreLocation reports correctly, so no correction is needed there.
+        const corrected = Platform.OS === 'android'
+          ? (h.magHeading + 180) % 360
+          : h.magHeading;
+        setBearing(Math.round(corrected));
       });
     })();
     return () => { sub?.remove(); };
