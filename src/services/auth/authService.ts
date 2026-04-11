@@ -58,10 +58,12 @@ export async function deductCredit(): Promise<number> {
  * In practice this is called by the IAP service after the Edge Function
  * confirms the purchase; the profile is then refreshed via AuthContext.
  */
-export async function updateLicenceTier(userId: string, tier: LicenceTier): Promise<void> {
+export async function updateLicenceTier(tier: LicenceTier): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
   const { error } = await supabase
     .from('profiles')
     .update({ licence_tier: tier, tier_purchased_at: new Date().toISOString() })
-    .eq('id', userId);
+    .eq('id', user.id);
   if (error) throw error;
 }
