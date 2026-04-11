@@ -47,5 +47,5 @@ export const ALL_PRODUCT_IDS: string[] = Object.values(IAP_PRODUCTS);
  * Create a free account, add your app, and copy the public SDK keys here.
  * These are safe to ship in the app bundle (they are public keys, not secret keys).
  */
-export const REVENUECAT_IOS_KEY = 'REPLACE_WITH_REVENUECAT_IOS_KEY';
+export const REVENUECAT_IOS_KEY = 'test_SDGRtRzRzQEtQSwKXoKsTIGcRZn';
 export const REVENUECAT_ANDROID_KEY = 'REPLACE_WITH_REVENUECAT_ANDROID_KEY';
