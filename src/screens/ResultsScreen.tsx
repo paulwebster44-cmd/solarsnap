@@ -22,7 +22,7 @@ import { SuitabilityVerdict } from '../types/solar';
 import { useAuth } from '../contexts/AuthContext';
 import UpgradeSheet from '../components/UpgradeSheet';
 import { IAP_PRODUCTS } from '../config/iapConfig';
-import { hasPaidTier, hasPremiumTier } from '../services/auth/licenceCheck';
+import { hasPremiumTier } from '../services/auth/licenceCheck';
 import type { LicenceTier } from '../services/auth/authService';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -49,14 +49,9 @@ export default function ResultsScreen() {
   const params = useRoute<ResultsScreenRouteProp>().params;
   const { result, bearing, tilt, latitude, longitude, obstruction, adjustedScore, adjustedVerdict } = params;
 
-  const [showUpgrade, setShowUpgrade] = useState(true);
+  const [showPremiumUpgrade, setShowPremiumUpgrade] = useState(false);
 
-  const isPaid    = profile ? hasPaidTier(profile)    : false;
   const isPremium = profile ? hasPremiumTier(profile) : false;
-
-  // Show the upgrade sheet if the user is on the free tier.
-  // Once they purchase (or already have a paid tier), the sheet stays hidden.
-  const upgradeVisible = !isPaid && showUpgrade;
 
   const displayVerdict = adjustedVerdict ?? result.verdict;
   const displayScore   = adjustedScore   ?? result.annualDaylightPercentage;
@@ -170,10 +165,12 @@ export default function ResultsScreen() {
 
       {/* ── Footer buttons ── */}
       <View style={s.footer}>
-        {/* Premium CTA — full report for premium/commercial, upgrade prompt for basic */}
+        {/* Premium CTA — navigate to yield report if premium, otherwise show upgrade sheet */}
         <TouchableOpacity
           style={s.premiumBtn}
-          onPress={() => navigation.navigate('PremiumResults', params)}
+          onPress={() => isPremium
+            ? navigation.navigate('PremiumResults', params)
+            : setShowPremiumUpgrade(true)}
         >
           <Text style={s.premiumBtnText}>
             {isPremium
@@ -186,13 +183,16 @@ export default function ResultsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Basic tier upgrade gate — shown automatically for free-tier users */}
+      {/* Premium upgrade sheet — shown when user taps Unlock Full Report */}
       <UpgradeSheet
-        visible={upgradeVisible}
-        productId={IAP_PRODUCTS.BASIC}
-        tierKey="basic"
-        onSuccess={(_tier: LicenceTier) => setShowUpgrade(false)}
-        onDismiss={() => setShowUpgrade(false)}
+        visible={showPremiumUpgrade}
+        productId={IAP_PRODUCTS.PREMIUM}
+        tierKey="premium"
+        onSuccess={(_tier: LicenceTier) => {
+          setShowPremiumUpgrade(false);
+          navigation.navigate('PremiumResults', params);
+        }}
+        onDismiss={() => setShowPremiumUpgrade(false)}
       />
 
     </View>

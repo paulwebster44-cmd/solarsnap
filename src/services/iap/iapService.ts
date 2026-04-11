@@ -15,10 +15,12 @@
  * RevenueCat setup checklist (one-time, in the RevenueCat dashboard):
  *   1. Create a free account at https://app.revenuecat.com
  *   2. Add an app for iOS and Android
- *   3. Create Entitlements: 'basic' and 'premium'
- *   4. Create Products: 'solarsnap_basic' and 'solarsnap_premium'
- *   5. Attach products to entitlements
+ *   3. Create Entitlement: 'premium'
+ *   4. Create Product: 'solarsnap_premium'
+ *   5. Attach product to entitlement
  *   6. Copy the public SDK keys to src/config/iapConfig.ts
+ *
+ * Note: Basic tier is free on sign-up — no IAP or entitlement needed for it.
  */
 
 import Purchases, { CustomerInfo } from 'react-native-purchases';
@@ -150,7 +152,6 @@ export async function restorePurchases(): Promise<LicenceTier | null> {
 
   let tier: LicenceTier | null = null;
   if (active['premium']) tier = 'premium';
-  else if (active['basic']) tier = 'basic';
 
   if (tier) {
     await updateLicenceTier(tier);
@@ -168,9 +169,7 @@ export async function restorePurchases(): Promise<LicenceTier | null> {
 function tierFromCustomerInfo(customerInfo: CustomerInfo, productId: string): LicenceTier {
   const active = customerInfo.entitlements.active;
   if (active['premium']) return 'premium';
-  if (active['basic']) return 'basic';
   // Fallback: infer from product ID if entitlements aren't configured yet
   if (productId === IAP_PRODUCTS.PREMIUM) return 'premium';
-  if (productId === IAP_PRODUCTS.BASIC) return 'basic';
-  return 'free';
+  return 'basic';
 }

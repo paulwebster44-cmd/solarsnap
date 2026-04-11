@@ -150,8 +150,8 @@ export default {
     },
     noCredits: {
       title: 'No Assessments Remaining',
-      description: "You've used all {{total}} of your assessment credits.",
-      upgrade: 'Get More Assessments',
+      description: "You've used all {{total}} of your assessment credits. Contact us to enquire about unlimited commercial access.",
+      upgrade: 'Enquire about Commercial Access',
       dismiss: 'Dismiss',
     },
     upgradeComingSoon: 'Upgrade options will be available in a future update.',

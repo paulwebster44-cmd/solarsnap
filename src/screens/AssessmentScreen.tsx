@@ -302,11 +302,9 @@ export default function AssessmentScreen() {
 
   // ── Licence modal actions ────────────────────────────────────────────────────
 
-  const [showUpgradeSheet, setShowUpgradeSheet] = useState(false);
-
   const handleUpgradeFromCredits = useCallback(() => {
     setShowNoCreditsModal(false);
-    setShowUpgradeSheet(true);
+    Linking.openURL(`mailto:${COMMERCIAL_ENQUIRY_EMAIL}?subject=SolarSnap%20Commercial%20Enquiry`);
   }, []);
 
   const handleUpgradeFromBoundary = useCallback(() => {
@@ -441,14 +439,6 @@ export default function AssessmentScreen() {
           </View>
         </View>
       </Modal>
-
-      <UpgradeSheet
-        visible={showUpgradeSheet}
-        productId={IAP_PRODUCTS.BASIC}
-        tierKey="basic"
-        onSuccess={() => setShowUpgradeSheet(false)}
-        onDismiss={() => setShowUpgradeSheet(false)}
-      />
 
       {/* No credits modal */}
       <Modal visible={showNoCreditsModal} transparent animationType="fade">

@@ -50,7 +50,7 @@ export default {
   account: { title: 'Konto', email: 'E-Mail', credits: 'Verbleibende Bewertungen', licenceTier: 'Lizenz', tiers: { basic: 'Basis', premium: 'Premium', commercial: 'Kommerziell' }, homeLocation: 'Heimatstandort', changeLocation: 'Standort ändern', signOut: 'Abmelden', confirmSignOut: 'Möchten Sie sich wirklich abmelden?', notSet: 'Nicht festgelegt', coordinates: '{{lat}}, {{lon}}', language: 'Sprache', languagePickerTitle: 'Sprache wählen', languageAutoDetected: 'Automatisch erkannt' },
   licence: {
     outsideBoundary: { title: 'Außerhalb Ihrer Bewertungszone', description: 'Bewertungen sind mit einer persönlichen Lizenz auf 200m rund um Ihren Heimatstandort beschränkt.', distance: 'Sie befinden sich {{distance}}m von Ihrem Heimatstandort entfernt.', upgrade: 'Auf kommerzielle Lizenz upgraden', dismiss: 'Schließen' },
-    noCredits: { title: 'Keine Bewertungen mehr verfügbar', description: 'Sie haben alle {{total}} Bewertungsgutschriften verwendet.', upgrade: 'Mehr Bewertungen erhalten', dismiss: 'Schließen' },
+    noCredits: { title: 'Keine Bewertungen mehr verfügbar', description: 'Sie haben alle {{total}} Bewertungsgutschriften verwendet. Kontaktieren Sie uns für unbegrenzten gewerblichen Zugang.', upgrade: 'Gewerblichen Zugang anfragen', dismiss: 'Schließen' },
     upgradeComingSoon: 'Upgrade-Optionen werden in einem zukünftigen Update verfügbar sein.',
   },
   premium: {

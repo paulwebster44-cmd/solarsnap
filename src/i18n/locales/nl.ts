@@ -50,7 +50,7 @@ export default {
   account: { title: 'Account', email: 'E-mail', credits: 'Resterende beoordelingen', licenceTier: 'Licentie', tiers: { basic: 'Basis', premium: 'Premium', commercial: 'Commercieel' }, homeLocation: 'Thuislocatie', changeLocation: 'Locatie wijzigen', signOut: 'Uitloggen', confirmSignOut: 'Weet u zeker dat u wilt uitloggen?', notSet: 'Niet ingesteld', coordinates: '{{lat}}, {{lon}}', language: 'Taal', languagePickerTitle: 'Kies taal', languageAutoDetected: 'Automatisch gedetecteerd' },
   licence: {
     outsideBoundary: { title: 'Buiten uw beoordelingszone', description: 'Beoordelingen zijn beperkt tot 200m van uw geregistreerde thuislocatie met een persoonlijke licentie.', distance: 'U bevindt zich {{distance}}m van uw thuislocatie.', upgrade: 'Upgraden naar commerciële licentie', dismiss: 'Sluiten' },
-    noCredits: { title: 'Geen beoordelingen meer', description: 'U heeft alle {{total}} beoordelingscredits gebruikt.', upgrade: 'Meer beoordelingen ophalen', dismiss: 'Sluiten' },
+    noCredits: { title: 'Geen beoordelingen meer', description: 'U heeft alle {{total}} beoordelingscredits gebruikt. Neem contact op voor onbeperkte commerciële toegang.', upgrade: 'Informeer over zakelijke toegang', dismiss: 'Sluiten' },
     upgradeComingSoon: 'Upgrade-opties zijn beschikbaar in een toekomstige update.',
   },
   premium: {

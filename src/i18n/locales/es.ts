@@ -50,7 +50,7 @@ export default {
   account: { title: 'Cuenta', email: 'Correo', credits: 'Evaluaciones restantes', licenceTier: 'Licencia', tiers: { basic: 'Básica', premium: 'Premium', commercial: 'Comercial' }, homeLocation: 'Ubicación del hogar', changeLocation: 'Cambiar ubicación', signOut: 'Cerrar sesión', confirmSignOut: '¿Seguro que quiere cerrar sesión?', notSet: 'No establecida', coordinates: '{{lat}}, {{lon}}', language: 'Idioma', languagePickerTitle: 'Elegir idioma', languageAutoDetected: 'Detectado automáticamente' },
   licence: {
     outsideBoundary: { title: 'Fuera de su zona de evaluación', description: 'Las evaluaciones están limitadas a 200m de su hogar registrado con una licencia personal.', distance: 'Está a {{distance}}m de su hogar.', upgrade: 'Actualizar a licencia comercial', dismiss: 'Cerrar' },
-    noCredits: { title: 'Sin evaluaciones disponibles', description: 'Ha utilizado todos sus {{total}} créditos de evaluación.', upgrade: 'Obtener más evaluaciones', dismiss: 'Cerrar' },
+    noCredits: { title: 'Sin evaluaciones disponibles', description: 'Ha utilizado todos sus {{total}} créditos de evaluación. Contáctenos para acceso comercial ilimitado.', upgrade: 'Consultar acceso comercial', dismiss: 'Cerrar' },
     upgradeComingSoon: 'Las opciones de actualización estarán disponibles en una futura actualización.',
   },
   premium: {

@@ -13,15 +13,9 @@
 
 export const IAP_PRODUCTS = {
   /**
-   * One-off purchase — unlocks the basic suitability verdict screen.
-   * Non-consumable (purchased once, restored on reinstall).
-   */
-  BASIC: 'solarsnap_basic',
-
-  /**
    * One-off purchase — unlocks the full PVGIS yield report.
-   * Includes everything in BASIC plus annual kWh, savings, and monthly chart.
-   * Non-consumable.
+   * Basic tier (verdict + score) is free on sign-up; Premium adds yield data.
+   * Non-consumable (purchased once, restored on reinstall).
    */
   PREMIUM: 'solarsnap_premium',
 } as const;
@@ -39,7 +33,7 @@ export type IAPProductId = (typeof IAP_PRODUCTS)[keyof typeof IAP_PRODUCTS];
  */
 export const COMMERCIAL_ENQUIRY_EMAIL = 'info@solarsnap.co.uk';
 
-/** All product IDs as an array — passed to getProductsAsync() on startup. */
+/** All product IDs as an array — passed to RevenueCat offerings on startup. */
 export const ALL_PRODUCT_IDS: string[] = Object.values(IAP_PRODUCTS);
 
 /**

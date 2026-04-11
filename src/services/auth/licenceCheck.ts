@@ -37,22 +37,17 @@ export function checkBoundary(
 /**
  * Returns whether the user may run another assessment.
  *
- * Paid tiers (basic, premium, commercial) have unlimited assessments — credits
- * only apply to the free tier, where they serve as the trial allowance.
+ * Commercial licence has unlimited assessments.
+ * All other tiers (free, basic, premium) share a credit allowance — Basic and
+ * Premium users receive 10 credits on sign-up/purchase; free/anonymous users
+ * receive a smaller trial allowance set in Supabase.
  */
 export function hasCredits(profile: UserProfile): boolean {
-  if (profile.licence_tier !== 'free') return true;
+  if (profile.licence_tier === 'commercial') return true;
   return profile.credits_remaining > 0;
 }
 
-/** Returns true if the user has purchased at least the Basic tier. */
-export function hasPaidTier(profile: UserProfile): boolean {
-  return profile.licence_tier === 'basic' ||
-         profile.licence_tier === 'premium' ||
-         profile.licence_tier === 'commercial';
-}
-
-/** Returns true if the user has purchased the Premium tier or holds a Commercial licence. */
+/** Returns true if the user has the Premium tier or a Commercial licence (yield report access). */
 export function hasPremiumTier(profile: UserProfile): boolean {
   return profile.licence_tier === 'premium' || profile.licence_tier === 'commercial';
 }
