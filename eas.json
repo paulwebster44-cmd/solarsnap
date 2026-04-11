@@ -8,17 +8,13 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://phohtdadtqxiqljcilvh.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "REPLACE_WITH_YOUR_ANON_KEY",
-        "EXPO_PUBLIC_HF_API_KEY": "REPLACE_WITH_YOUR_HF_KEY"
+        "EXPO_PUBLIC_SUPABASE_URL": "https://phohtdadtqxiqljcilvh.supabase.co"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://phohtdadtqxiqljcilvh.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "REPLACE_WITH_YOUR_ANON_KEY",
-        "EXPO_PUBLIC_HF_API_KEY": "REPLACE_WITH_YOUR_HF_KEY"
+        "EXPO_PUBLIC_SUPABASE_URL": "https://phohtdadtqxiqljcilvh.supabase.co"
       }
     },
     "production": {
@@ -30,27 +26,21 @@
         "distribution": "store"
       },
       "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://phohtdadtqxiqljcilvh.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "REPLACE_WITH_YOUR_ANON_KEY",
-        "EXPO_PUBLIC_HF_API_KEY": "REPLACE_WITH_YOUR_HF_KEY"
+        "EXPO_PUBLIC_SUPABASE_URL": "https://phohtdadtqxiqljcilvh.supabase.co"
       }
     },
     "development-simulator": {
       "developmentClient": true,
-      "distribution": "internal",
-      "ios": {
-        "simulator": true
-      },
-      "environment": "development"
+      "distribution": "internal"
     }
   },
   "submit": {
     "production": {
-      "ios": {
-        "appleId": "REPLACE_WITH_YOUR_APPLE_ID_EMAIL",
-        "ascAppId": "REPLACE_WITH_APP_STORE_CONNECT_APP_ID",
-        "appleTeamId": "REPLACE_WITH_YOUR_TEAM_ID"
-      },
+        "ios": {
+            "appleId": "paulwebster44@gmail.com",
+            "ascAppId": "6761907662",
+            "appleTeamId": "3QNL2H6J2H"
+        },
       "android": {
         "serviceAccountKeyPath": "./google-play-service-account.json",
         "track": "internal"
