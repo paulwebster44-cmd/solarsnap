@@ -75,10 +75,10 @@ export default function App() {
     };
 
     // App opened via deep link
-    Linking.getInitialURL().then((url) => { if (url) handleUrl(url); });
+    Linking.getInitialURL().then((url: string | null) => { if (url) handleUrl(url); });
 
     // Deep link received while app is already running
-    const subscription = Linking.addEventListener('url', ({ url }) => handleUrl(url));
+    const subscription = Linking.addEventListener('url', ({ url }: { url: string }) => handleUrl(url));
 
     return () => {
       subscription.remove();

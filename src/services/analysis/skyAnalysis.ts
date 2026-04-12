@@ -15,6 +15,8 @@
  * the portion of sky the sun actually travels through.
  */
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore — expo-file-system/legacy has no separate type declarations
 import * as FileSystem from 'expo-file-system/legacy';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { decodePNGMask, countMaskPixels } from './pngDecoder';
