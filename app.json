@@ -2,6 +2,7 @@
   "expo": {
     "name": "SolarSnap",
     "slug": "solarsnap",
+    "scheme": "solarsnap",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -19,7 +20,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "SolarSnap uses the camera to photograph the sky at your proposed panel location. The photo is analysed to detect shading from buildings and trees.",
         "NSLocationWhenInUseUsageDescription": "SolarSnap uses your GPS location to calculate the sun's position at your site and to confirm you are within your registered home assessment zone.",
-        "NSMotionUsageDescription": "SolarSnap uses the accelerometer to measure the angle your phone is being held, which corresponds to the tilt of the proposed solar panel."
+        "NSMotionUsageDescription": "SolarSnap uses the accelerometer to measure the angle your phone is being held, which corresponds to the tilt of the proposed solar panel.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
