@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 
-export type LicenceTier = 'free' | 'basic' | 'premium' | 'commercial';
+export type LicenceTier = 'basic' | 'premium' | 'commercial';
 
 export interface UserProfile {
   id: string;
