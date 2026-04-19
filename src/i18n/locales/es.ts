@@ -20,7 +20,7 @@ export default {
     assess: 'Evaluar',
     cameraPermRequired: 'Se necesita acceso a la cámara para evaluar el potencial solar.',
     locationPermRequired: 'Se necesita acceso a la ubicación para calcular la posición del sol.',
-    grantCamera: 'Permitir cámara',
+    grantCamera: 'Continuar',
     stage: { takingPhoto: 'Tomando foto…', takingSecondPhoto: 'Segunda foto…', gps: 'Leyendo posición GPS…', solar: 'Calculando posición solar…', sky: 'Analizando cielo en busca de obstrucciones…\n(unos 10 segundos)', warmingUp: 'El modelo está arrancando…\nReintentando en {{seconds}}s' },
     borderline: { title: 'Resultado límite', body: 'La vista parece estar parcialmente obstruida. Una segunda foto desde un ángulo ligeramente diferente dará un resultado más preciso.', takeAnother: 'Tomar otra foto', useFirst: 'Usar este resultado' },
   },

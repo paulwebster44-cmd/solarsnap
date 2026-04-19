@@ -20,7 +20,7 @@ export default {
     assess: 'Beoordelen',
     cameraPermRequired: 'Cameratoegang is vereist voor de solarbeoordeling.',
     locationPermRequired: 'Locatietoegang is vereist om de positie van de zon te berekenen.',
-    grantCamera: 'Cameratoegang verlenen',
+    grantCamera: 'Doorgaan',
     stage: { takingPhoto: 'Foto wordt gemaakt…', takingSecondPhoto: 'Tweede foto…', gps: 'GPS-locatie wordt gelezen…', solar: 'Zonnepositie wordt berekend…', sky: 'Lucht wordt geanalyseerd op obstakels…\n(duurt ca. 10 seconden)', warmingUp: 'Model wordt opgestart…\nOpnieuw proberen over {{seconds}}s' },
     borderline: { title: 'Grensresultaat', body: 'Het uitzicht lijkt ongeveer half geblokkeerd. Een tweede foto vanuit een iets andere hoek geeft een nauwkeuriger resultaat.', takeAnother: 'Nog een foto maken', useFirst: 'Dit resultaat gebruiken' },
   },

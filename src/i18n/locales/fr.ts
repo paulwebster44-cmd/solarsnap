@@ -20,7 +20,7 @@ export default {
     assess: 'Évaluer',
     cameraPermRequired: 'L\'accès à la caméra est nécessaire pour l\'évaluation solaire.',
     locationPermRequired: 'L\'accès à la localisation est nécessaire pour calculer la position du soleil.',
-    grantCamera: 'Autoriser la caméra',
+    grantCamera: 'Continuer',
     stage: { takingPhoto: 'Prise de photo…', takingSecondPhoto: 'Deuxième photo…', gps: 'Lecture de la position GPS…', solar: 'Calcul de la position solaire…', sky: 'Analyse du ciel pour les obstructions…\n(environ 10 secondes)', warmingUp: 'Modèle en cours de démarrage…\nNouvelle tentative dans {{seconds}}s' },
     borderline: { title: 'Résultat limite', body: 'La vue semble à moitié obstruée. Une seconde photo sous un angle légèrement différent donnera un résultat plus précis.', takeAnother: 'Prendre une autre photo', useFirst: 'Utiliser ce résultat' },
   },

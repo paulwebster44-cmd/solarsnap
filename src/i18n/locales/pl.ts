@@ -20,7 +20,7 @@ export default {
     assess: 'Oceń',
     cameraPermRequired: 'Dostęp do aparatu jest wymagany do oceny potencjału słonecznego.',
     locationPermRequired: 'Dostęp do lokalizacji jest wymagany do obliczenia pozycji słońca.',
-    grantCamera: 'Zezwól na aparat',
+    grantCamera: 'Kontynuuj',
     stage: { takingPhoto: 'Robienie zdjęcia…', takingSecondPhoto: 'Drugie zdjęcie…', gps: 'Odczyt pozycji GPS…', solar: 'Obliczanie pozycji słońca…', sky: 'Analiza nieba pod kątem przeszkód…\n(około 10 sekund)', warmingUp: 'Model się uruchamia…\nPonowna próba za {{seconds}}s' },
     borderline: { title: 'Wynik graniczny', body: 'Widok wydaje się być mniej więcej w połowie zasłonięty. Drugie zdjęcie pod nieco innym kątem da dokładniejszy wynik.', takeAnother: 'Zrób kolejne zdjęcie', useFirst: 'Użyj tego wyniku' },
   },

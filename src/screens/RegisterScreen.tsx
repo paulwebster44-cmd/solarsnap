@@ -39,10 +39,13 @@ export default function RegisterScreen() {
     setLoading(true);
     try {
       await doSignUp(email.trim(), password);
+      // onAuthStateChange in AuthContext will handle navigation once signed in
     } catch (err: any) {
       const msg: string = err?.message ?? '';
-      if (msg.toLowerCase().includes('already')) {
+      if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('registered')) {
         setError(t('auth.register.emailInUse'));
+      } else if (msg.toLowerCase().includes('password')) {
+        setError(t('auth.register.passwordTooShort'));
       } else {
         setError(t('auth.register.failed'));
       }

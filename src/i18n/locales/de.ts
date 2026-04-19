@@ -20,7 +20,7 @@ export default {
     assess: 'Bewerten',
     cameraPermRequired: 'Kamerazugriff ist für die Solarbewertung erforderlich.',
     locationPermRequired: 'Standortzugriff ist für die Berechnung der Sonnenposition erforderlich.',
-    grantCamera: 'Kamerazugriff erlauben',
+    grantCamera: 'Weiter',
     stage: { takingPhoto: 'Foto wird aufgenommen…', takingSecondPhoto: 'Zweites Foto…', gps: 'GPS-Position wird gelesen…', solar: 'Sonnenposition wird berechnet…', sky: 'Himmel wird auf Hindernisse analysiert…\n(ca. 10 Sekunden)', warmingUp: 'Modell wird gestartet…\nNeuer Versuch in {{seconds}}s' },
     borderline: { title: 'Grenzwertiges Ergebnis', body: 'Die Sicht scheint zur Hälfte verdeckt zu sein. Ein zweites Foto aus einem etwas anderen Winkel liefert ein genaueres Ergebnis.', takeAnother: 'Weiteres Foto aufnehmen', useFirst: 'Dieses Ergebnis verwenden' },
   },

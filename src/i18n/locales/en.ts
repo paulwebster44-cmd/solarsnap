@@ -29,7 +29,7 @@ export default {
     assess: 'Assess',
     cameraPermRequired: 'Camera access is required to assess solar potential.',
     locationPermRequired: "Location access is required to calculate the sun's position.",
-    grantCamera: 'Grant Camera Access',
+    grantCamera: 'Continue',
     stage: {
       takingPhoto: 'Taking photo…',
       takingSecondPhoto: 'Taking second photo…',
