@@ -28,6 +28,8 @@ export function checkBoundary(
   // Commercial licence has no boundary restriction
   if (profile.licence_tier === 'commercial') return { allowed: true };
   if (profile.home_latitude == null || profile.home_longitude == null) return { allowed: true };
+  // (0, 0) is "Null Island" — treat as unset when the DB column defaults to 0 instead of NULL
+  if (profile.home_latitude === 0 && profile.home_longitude === 0) return { allowed: true };
 
   const distance = haversineDistance(userLat, userLon, profile.home_latitude, profile.home_longitude);
   if (distance <= 200) return { allowed: true };

@@ -49,8 +49,8 @@ export default {
   homeLocation: { title: 'Imposta posizione casa', instruction: 'Le valutazioni sono limitate a 200m dalla tua casa con una licenza personale. Imposta la tua posizione qui sotto.', useGPS: 'Usa posizione attuale', setOnMap: 'Posiziona sulla mappa', findingLocation: 'Ricerca posizione…', confirm: 'Conferma questa posizione', mapInstruction: 'Tocca la mappa per spostare il segnaposto', lat: 'Lat: {{lat}}', lon: 'Lon: {{lon}}', locationError: 'Impossibile ottenere la posizione. Verificare che il GPS sia attivo.' },
   account: { title: 'Account', email: 'E-mail', credits: 'Valutazioni rimanenti', licenceTier: 'Licenza', tiers: { basic: 'Base', premium: 'Premium', commercial: 'Commerciale' }, homeLocation: 'Posizione casa', changeLocation: 'Cambia posizione', signOut: 'Esci', confirmSignOut: 'Sei sicuro di voler uscire?', notSet: 'Non impostata', coordinates: '{{lat}}, {{lon}}', language: 'Lingua', languagePickerTitle: 'Scegli lingua', languageAutoDetected: 'Rilevato automaticamente' },
   licence: {
-    outsideBoundary: { title: 'Fuori dalla tua zona', description: 'Le valutazioni sono limitate a 200m dalla tua casa con una licenza personale.', distance: 'Sei a {{distance}}m dalla tua casa.', upgrade: 'Passa alla licenza commerciale', dismiss: 'Chiudi' },
-    noCredits: { title: 'Nessuna valutazione disponibile', description: 'Hai utilizzato tutti i {{total}} crediti di valutazione. Contattaci per un accesso commerciale illimitato.', upgrade: 'Richiedi accesso commerciale', dismiss: 'Chiudi' },
+    outsideBoundary: { title: 'Fuori dalla tua zona', description: 'Le valutazioni sono limitate a 200m dalla tua casa con una licenza personale. Per un accesso commerciale senza restrizioni, contattaci:', distance: 'Sei a {{distance}}m dalla tua casa.', dismiss: 'OK' },
+    noCredits: { title: 'Nessuna valutazione disponibile', description: 'Hai utilizzato tutti i tuoi crediti di valutazione. Per un accesso commerciale illimitato, contattaci:', dismiss: 'OK' },
     upgradeComingSoon: 'Le opzioni di aggiornamento saranno disponibili in un futuro aggiornamento.',
   },
   premium: {

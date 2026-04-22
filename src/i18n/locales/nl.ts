@@ -49,8 +49,8 @@ export default {
   homeLocation: { title: 'Thuislocatie instellen', instruction: 'Beoordelingen zijn beperkt tot 200m van uw thuis met een persoonlijke licentie. Stel uw locatie hieronder in.', useGPS: 'Huidige locatie gebruiken', setOnMap: 'Op kaart plaatsen', findingLocation: 'Locatie zoeken…', confirm: 'Deze locatie bevestigen', mapInstruction: 'Tik op de kaart om de pin te verplaatsen', lat: 'Br.: {{lat}}', lon: 'Lg.: {{lon}}', locationError: 'Locatie kon niet worden bepaald. Controleer of GPS is ingeschakeld.' },
   account: { title: 'Account', email: 'E-mail', credits: 'Resterende beoordelingen', licenceTier: 'Licentie', tiers: { basic: 'Basis', premium: 'Premium', commercial: 'Commercieel' }, homeLocation: 'Thuislocatie', changeLocation: 'Locatie wijzigen', signOut: 'Uitloggen', confirmSignOut: 'Weet u zeker dat u wilt uitloggen?', notSet: 'Niet ingesteld', coordinates: '{{lat}}, {{lon}}', language: 'Taal', languagePickerTitle: 'Kies taal', languageAutoDetected: 'Automatisch gedetecteerd' },
   licence: {
-    outsideBoundary: { title: 'Buiten uw beoordelingszone', description: 'Beoordelingen zijn beperkt tot 200m van uw geregistreerde thuislocatie met een persoonlijke licentie.', distance: 'U bevindt zich {{distance}}m van uw thuislocatie.', upgrade: 'Upgraden naar commerciële licentie', dismiss: 'Sluiten' },
-    noCredits: { title: 'Geen beoordelingen meer', description: 'U heeft alle {{total}} beoordelingscredits gebruikt. Neem contact op voor onbeperkte commerciële toegang.', upgrade: 'Informeer over zakelijke toegang', dismiss: 'Sluiten' },
+    outsideBoundary: { title: 'Buiten uw beoordelingszone', description: 'Beoordelingen zijn beperkt tot 200m van uw geregistreerde thuislocatie met een persoonlijke licentie. Voor onbeperkte commerciële toegang, neem contact op:', distance: 'U bevindt zich {{distance}}m van uw thuislocatie.', dismiss: 'OK' },
+    noCredits: { title: 'Geen beoordelingen meer', description: 'U heeft alle beoordelingscredits gebruikt. Voor onbeperkte commerciële toegang, neem contact op:', dismiss: 'OK' },
     upgradeComingSoon: 'Upgrade-opties zijn beschikbaar in een toekomstige update.',
   },
   premium: {

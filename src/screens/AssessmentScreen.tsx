@@ -16,7 +16,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Linking,
   Modal,
   Platform,
   StyleSheet,
@@ -37,8 +36,7 @@ import { deductCredit } from '../services/auth/authService';
 import { checkBoundary, hasCredits } from '../services/auth/licenceCheck';
 import { useAuth } from '../contexts/AuthContext';
 import { AssessmentScreenNavProp } from '../types/navigation';
-import UpgradeSheet from '../components/UpgradeSheet';
-import { IAP_PRODUCTS, COMMERCIAL_ENQUIRY_EMAIL } from '../config/iapConfig';
+import { COMMERCIAL_ENQUIRY_EMAIL } from '../config/iapConfig';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -300,18 +298,6 @@ export default function AssessmentScreen() {
     });
   }, [pendingData, navigation, refreshProfile]);
 
-  // ── Licence modal actions ────────────────────────────────────────────────────
-
-  const handleUpgradeFromCredits = useCallback(() => {
-    setShowNoCreditsModal(false);
-    Linking.openURL(`mailto:${COMMERCIAL_ENQUIRY_EMAIL}?subject=SolarSnap%20Commercial%20Enquiry`);
-  }, []);
-
-  const handleUpgradeFromBoundary = useCallback(() => {
-    setShowBoundaryModal(false);
-    Linking.openURL(`mailto:${COMMERCIAL_ENQUIRY_EMAIL}?subject=SolarSnap%20Commercial%20Enquiry`);
-  }, []);
-
   // ── Render: permission gates ─────────────────────────────────────────────────
 
   if (!cameraPermission) {
@@ -430,9 +416,7 @@ export default function AssessmentScreen() {
             <Text style={s.modalTitle}>{t('licence.outsideBoundary.title')}</Text>
             <Text style={s.modalBody}>{t('licence.outsideBoundary.description')}</Text>
             <Text style={s.modalNote}>{t('licence.outsideBoundary.distance', { distance: boundaryDistance })}</Text>
-            <TouchableOpacity style={s.modalPrimaryBtn} onPress={handleUpgradeFromBoundary}>
-              <Text style={s.modalPrimaryBtnText}>{t('licence.outsideBoundary.upgrade')}</Text>
-            </TouchableOpacity>
+            <Text style={s.modalContactText}>{COMMERCIAL_ENQUIRY_EMAIL}</Text>
             <TouchableOpacity style={s.modalSecondaryBtn} onPress={() => setShowBoundaryModal(false)}>
               <Text style={s.modalSecondaryBtnText}>{t('licence.outsideBoundary.dismiss')}</Text>
             </TouchableOpacity>
@@ -445,12 +429,8 @@ export default function AssessmentScreen() {
         <View style={s.modalOverlay}>
           <View style={s.modalCard}>
             <Text style={s.modalTitle}>{t('licence.noCredits.title')}</Text>
-            <Text style={s.modalBody}>
-              {t('licence.noCredits.description', { total: profile?.credits_remaining ?? 0 })}
-            </Text>
-            <TouchableOpacity style={s.modalPrimaryBtn} onPress={handleUpgradeFromCredits}>
-              <Text style={s.modalPrimaryBtnText}>{t('licence.noCredits.upgrade')}</Text>
-            </TouchableOpacity>
+            <Text style={s.modalBody}>{t('licence.noCredits.description')}</Text>
+            <Text style={s.modalContactText}>{COMMERCIAL_ENQUIRY_EMAIL}</Text>
             <TouchableOpacity style={s.modalSecondaryBtn} onPress={() => setShowNoCreditsModal(false)}>
               <Text style={s.modalSecondaryBtnText}>{t('licence.noCredits.dismiss')}</Text>
             </TouchableOpacity>
@@ -524,7 +504,8 @@ const s = StyleSheet.create({
   modalCard: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 28, paddingBottom: Platform.OS === 'ios' ? 44 : 28 },
   modalTitle: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 12 },
   modalBody: { fontSize: 15, color: '#374151', lineHeight: 22, marginBottom: 8 },
-  modalNote: { fontSize: 14, color: '#6b7280', marginBottom: 20 },
+  modalNote: { fontSize: 14, color: '#6b7280', marginBottom: 12 },
+  modalContactText: { fontSize: 14, color: '#f59e0b', fontWeight: '600', marginBottom: 20 },
   modalPrimaryBtn: { backgroundColor: '#f59e0b', paddingVertical: 16, borderRadius: 50, alignItems: 'center', marginBottom: 12 },
   modalPrimaryBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   modalSecondaryBtn: { paddingVertical: 12, alignItems: 'center' },

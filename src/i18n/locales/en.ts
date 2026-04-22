@@ -143,16 +143,14 @@ export default {
   licence: {
     outsideBoundary: {
       title: 'Outside Your Assessment Zone',
-      description: 'Assessments are limited to within 200m of your registered home location on a personal licence.',
+      description: 'Assessments are limited to within 200m of your registered home location on a personal licence. For unrestricted commercial access, contact:',
       distance: "You're {{distance}}m from your home location.",
-      upgrade: 'Upgrade to Commercial Licence',
-      dismiss: 'Dismiss',
+      dismiss: 'OK',
     },
     noCredits: {
       title: 'No Assessments Remaining',
-      description: "You've used all {{total}} of your assessment credits. Contact us to enquire about unlimited commercial access.",
-      upgrade: 'Enquire about Commercial Access',
-      dismiss: 'Dismiss',
+      description: "You've used all of your assessment credits. For unlimited commercial access, contact:",
+      dismiss: 'OK',
     },
     upgradeComingSoon: 'Upgrade options will be available in a future update.',
   },

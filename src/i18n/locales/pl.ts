@@ -49,8 +49,8 @@ export default {
   homeLocation: { title: 'Ustaw lokalizację domu', instruction: 'Oceny są ograniczone do 200m od Twojego domu w ramach licencji osobistej. Ustaw swoją lokalizację poniżej.', useGPS: 'Użyj bieżącej lokalizacji', setOnMap: 'Umieść na mapie', findingLocation: 'Wyszukiwanie lokalizacji…', confirm: 'Potwierdź tę lokalizację', mapInstruction: 'Kliknij mapę, aby przesunąć znacznik', lat: 'Szer.: {{lat}}', lon: 'Dług.: {{lon}}', locationError: 'Nie można uzyskać lokalizacji. Sprawdź, czy GPS jest włączony.' },
   account: { title: 'Konto', email: 'E-mail', credits: 'Pozostałe oceny', licenceTier: 'Licencja', tiers: { basic: 'Podstawowa', premium: 'Premium', commercial: 'Komercyjna' }, homeLocation: 'Lokalizacja domu', changeLocation: 'Zmień lokalizację', signOut: 'Wyloguj się', confirmSignOut: 'Czy na pewno chcesz się wylogować?', notSet: 'Nie ustawiono', coordinates: '{{lat}}, {{lon}}', language: 'Język', languagePickerTitle: 'Wybierz język', languageAutoDetected: 'Wykryty automatycznie' },
   licence: {
-    outsideBoundary: { title: 'Poza strefą oceny', description: 'Oceny są ograniczone do 200m od zarejestrowanego miejsca zamieszkania w ramach licencji osobistej.', distance: 'Jesteś {{distance}}m od swojego domu.', upgrade: 'Przejdź na licencję komercyjną', dismiss: 'Zamknij' },
-    noCredits: { title: 'Brak dostępnych ocen', description: 'Wykorzystałeś wszystkie {{total}} kredyty ocen. Skontaktuj się z nami w sprawie nieograniczonego dostępu komercyjnego.', upgrade: 'Zapytaj o dostęp komercyjny', dismiss: 'Zamknij' },
+    outsideBoundary: { title: 'Poza strefą oceny', description: 'Oceny są ograniczone do 200m od zarejestrowanego miejsca zamieszkania w ramach licencji osobistej. Aby uzyskać nieograniczony dostęp komercyjny, skontaktuj się:', distance: 'Jesteś {{distance}}m od swojego domu.', dismiss: 'OK' },
+    noCredits: { title: 'Brak dostępnych ocen', description: 'Wykorzystałeś wszystkie swoje kredyty ocen. Aby uzyskać nieograniczony dostęp komercyjny, skontaktuj się:', dismiss: 'OK' },
     upgradeComingSoon: 'Opcje aktualizacji będą dostępne w przyszłej aktualizacji.',
   },
   premium: {
