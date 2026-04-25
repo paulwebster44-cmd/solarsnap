@@ -15,7 +15,7 @@
     },
     "ios": {
       "bundleIdentifier": "co.uk.solarsnap.app",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "supportsTablet": false,
       "infoPlist": {
         "NSCameraUsageDescription": "SolarSnap uses the camera to photograph the sky at your proposed panel location. The photo is analysed to detect shading from buildings and trees.",
@@ -26,7 +26,7 @@
     },
     "android": {
       "package": "co.uk.solarsnap.app",
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"

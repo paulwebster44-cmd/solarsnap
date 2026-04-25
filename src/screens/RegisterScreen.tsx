@@ -67,6 +67,7 @@ export default function RegisterScreen() {
         <TextInput
           style={s.input}
           placeholder={t('auth.register.email')}
+          placeholderTextColor="#9ca3af"
           autoCapitalize="none"
           keyboardType="email-address"
           value={email}
@@ -77,6 +78,7 @@ export default function RegisterScreen() {
           <TextInput
             style={s.passwordInput}
             placeholder={t('auth.register.password')}
+            placeholderTextColor="#9ca3af"
             secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
@@ -90,6 +92,7 @@ export default function RegisterScreen() {
           <TextInput
             style={s.passwordInput}
             placeholder={t('auth.register.confirmPassword')}
+            placeholderTextColor="#9ca3af"
             secureTextEntry={!showConfirmPassword}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
@@ -133,7 +136,7 @@ const s = StyleSheet.create({
   input: {
     borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 10,
     paddingHorizontal: 16, paddingVertical: 14,
-    fontSize: 16, marginBottom: 12, backgroundColor: '#f9fafb',
+    fontSize: 16, marginBottom: 12, backgroundColor: '#f9fafb', color: '#111827',
   },
   passwordRow: {
     flexDirection: 'row', alignItems: 'center',
@@ -141,7 +144,7 @@ const s = StyleSheet.create({
     backgroundColor: '#f9fafb', marginBottom: 12,
   },
   passwordInput: {
-    flex: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16,
+    flex: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: '#111827',
   },
   eyeBtn: { paddingHorizontal: 14 },
   errorText: { color: '#dc2626', fontSize: 14, marginBottom: 12, textAlign: 'center' },
