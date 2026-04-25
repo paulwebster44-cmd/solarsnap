@@ -108,6 +108,7 @@ export default {
       signIn: 'Log in',
       passwordMismatch: 'Passwords do not match.',
       passwordTooShort: 'Password must be at least 6 characters.',
+      passwordWeak: 'Password must include uppercase, lowercase, a number, and a special character (e.g. Abc123!).',
       emailInUse: 'An account with this email already exists.',
       failed: 'Registration failed. Please try again.',
     },

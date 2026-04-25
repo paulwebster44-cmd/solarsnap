@@ -44,8 +44,12 @@ export default function RegisterScreen() {
       const msg: string = err?.message ?? '';
       if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('registered')) {
         setError(t('auth.register.emailInUse'));
-      } else if (msg.toLowerCase().includes('password')) {
+      } else if (msg.toLowerCase().includes('at least') || msg.toLowerCase().includes('characters')) {
+        // Supabase minimum-length error
         setError(t('auth.register.passwordTooShort'));
+      } else if (msg.toLowerCase().includes('password') || msg.toLowerCase().includes('weak') || msg.toLowerCase().includes('strength')) {
+        // Supabase password policy error (special chars, uppercase, etc.)
+        setError(t('auth.register.passwordWeak'));
       } else {
         setError(t('auth.register.failed'));
       }
