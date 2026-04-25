@@ -106,6 +106,7 @@ export default {
       submit: 'Create account',
       hasAccount: 'Already have an account?',
       signIn: 'Log in',
+      passwordHint: 'Use uppercase, lowercase, a number and a symbol — e.g. Abc123!',
       passwordMismatch: 'Passwords do not match.',
       passwordTooShort: 'Password must be at least 6 characters.',
       passwordWeak: 'Password must include uppercase, lowercase, a number, and a special character (e.g. Abc123!).',

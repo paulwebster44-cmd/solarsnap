@@ -91,6 +91,7 @@ export default function RegisterScreen() {
             <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={22} color="#9ca3af" />
           </TouchableOpacity>
         </View>
+        <Text style={s.passwordHint}>{t('auth.register.passwordHint')}</Text>
 
         <View style={s.passwordRow}>
           <TextInput
@@ -151,6 +152,7 @@ const s = StyleSheet.create({
     flex: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: '#111827',
   },
   eyeBtn: { paddingHorizontal: 14 },
+  passwordHint: { fontSize: 12, color: '#9ca3af', marginTop: -6, marginBottom: 12, paddingHorizontal: 4 },
   errorText: { color: '#dc2626', fontSize: 14, marginBottom: 12, textAlign: 'center' },
   btn: {
     backgroundColor: '#f59e0b', paddingVertical: 16,
