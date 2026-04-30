@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -24,6 +25,7 @@ export default function LoginScreen() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,18 +54,26 @@ export default function LoginScreen() {
         <TextInput
           style={s.input}
           placeholder={t('auth.login.email')}
+          placeholderTextColor="#9ca3af"
           autoCapitalize="none"
           keyboardType="email-address"
           value={email}
           onChangeText={setEmail}
         />
-        <TextInput
-          style={s.input}
-          placeholder={t('auth.login.password')}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+
+        <View style={s.passwordRow}>
+          <TextInput
+            style={s.passwordInput}
+            placeholder={t('auth.login.password')}
+            placeholderTextColor="#9ca3af"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity style={s.eyeBtn} onPress={() => setShowPassword(v => !v)}>
+            <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={22} color="#9ca3af" />
+          </TouchableOpacity>
+        </View>
 
         {error && <Text style={s.errorText}>{error}</Text>}
 
@@ -99,8 +109,17 @@ const s = StyleSheet.create({
   input: {
     borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 10,
     paddingHorizontal: 16, paddingVertical: 14,
-    fontSize: 16, marginBottom: 12, backgroundColor: '#f9fafb',
+    fontSize: 16, marginBottom: 12, backgroundColor: '#f9fafb', color: '#111827',
   },
+  passwordRow: {
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 10,
+    backgroundColor: '#f9fafb', marginBottom: 12,
+  },
+  passwordInput: {
+    flex: 1, paddingHorizontal: 16, paddingVertical: 14, fontSize: 16, color: '#111827',
+  },
+  eyeBtn: { paddingHorizontal: 14 },
   errorText: { color: '#dc2626', fontSize: 14, marginBottom: 12, textAlign: 'center' },
   btn: {
     backgroundColor: '#f59e0b', paddingVertical: 16,

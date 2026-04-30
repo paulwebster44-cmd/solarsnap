@@ -1,0 +1,50 @@
+{
+  "cli": {
+    "version": ">= 12.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://phohtdadtqxiqljcilvh.supabase.co"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://phohtdadtqxiqljcilvh.supabase.co"
+      }
+    },
+    "production": {
+      "ios": {
+        "distribution": "store"
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "distribution": "store"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://phohtdadtqxiqljcilvh.supabase.co"
+      }
+    },
+    "development-simulator": {
+      "developmentClient": true,
+      "distribution": "internal"
+    }
+  },
+  "submit": {
+    "production": {
+        "ios": {
+            "appleId": "paulwebster44@gmail.com",
+            "ascAppId": "6761907662",
+            "appleTeamId": "3QNL2H6J2H"
+        },
+      "android": {
+        "serviceAccountKeyPath": "./.google-play-service-account.json",
+        "track": "internal"
+      }
+    }
+  }
+}

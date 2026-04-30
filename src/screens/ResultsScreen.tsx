@@ -6,7 +6,7 @@
  * the adjusted score so the user understands the impact of any obstructions.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Platform,
   ScrollView,
@@ -19,6 +19,11 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { ResultsScreenNavProp, ResultsScreenRouteProp } from '../types/navigation';
 import { SuitabilityVerdict } from '../types/solar';
+import { useAuth } from '../contexts/AuthContext';
+import UpgradeSheet from '../components/UpgradeSheet';
+import { IAP_PRODUCTS } from '../config/iapConfig';
+import { hasPremiumTier } from '../services/auth/licenceCheck';
+import type { LicenceTier } from '../services/auth/authService';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -40,8 +45,13 @@ function bearingToLabel(b: number): string {
 export default function ResultsScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<ResultsScreenNavProp>();
-  const { result, bearing, tilt, latitude, longitude, obstruction, adjustedScore, adjustedVerdict } =
-    useRoute<ResultsScreenRouteProp>().params;
+  const { profile } = useAuth();
+  const params = useRoute<ResultsScreenRouteProp>().params;
+  const { result, bearing, tilt, latitude, longitude, obstruction, adjustedScore, adjustedVerdict } = params;
+
+  const [showPremiumUpgrade, setShowPremiumUpgrade] = useState(false);
+
+  const isPremium = profile ? hasPremiumTier(profile) : false;
 
   const displayVerdict = adjustedVerdict ?? result.verdict;
   const displayScore   = adjustedScore   ?? result.annualDaylightPercentage;
@@ -153,12 +163,37 @@ export default function ResultsScreen() {
 
       </ScrollView>
 
-      {/* ── Footer button ── */}
+      {/* ── Footer buttons ── */}
       <View style={s.footer}>
+        {/* Premium CTA — navigate to yield report if premium, otherwise show upgrade sheet */}
+        <TouchableOpacity
+          style={s.premiumBtn}
+          onPress={() => isPremium
+            ? navigation.navigate('PremiumResults', params)
+            : setShowPremiumUpgrade(true)}
+        >
+          <Text style={s.premiumBtnText}>
+            {isPremium
+              ? t('premium.seeFullReport')
+              : t('premium.unlockFullReport')}
+          </Text>
+        </TouchableOpacity>
         <TouchableOpacity style={s.retryBtn} onPress={() => navigation.goBack()}>
           <Text style={s.retryBtnText}>{t('results.assessAgain')}</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Premium upgrade sheet — shown when user taps Unlock Full Report */}
+      <UpgradeSheet
+        visible={showPremiumUpgrade}
+        productId={IAP_PRODUCTS.PREMIUM}
+        tierKey="premium"
+        onSuccess={(_tier: LicenceTier) => {
+          setShowPremiumUpgrade(false);
+          navigation.navigate('PremiumResults', params);
+        }}
+        onDismiss={() => setShowPremiumUpgrade(false)}
+      />
 
     </View>
   );
@@ -213,7 +248,9 @@ const s = StyleSheet.create({
   rowValue: { color: '#111827', fontSize: 15, fontWeight: '600' },
   tiltNote: { marginTop: 10, fontSize: 12, color: '#9ca3af', fontStyle: 'italic' },
 
-  footer: { paddingHorizontal: 24, paddingBottom: Platform.OS === 'ios' ? 40 : 24, paddingTop: 16, backgroundColor: '#fff', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#e5e7eb' },
+  footer: { paddingHorizontal: 24, paddingBottom: Platform.OS === 'ios' ? 40 : 24, paddingTop: 16, backgroundColor: '#fff', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#e5e7eb', gap: 10 },
+  premiumBtn: { backgroundColor: '#111827', paddingVertical: 16, borderRadius: 50, alignItems: 'center' },
+  premiumBtnText: { color: '#f59e0b', fontSize: 17, fontWeight: '700' },
   retryBtn: { backgroundColor: '#f59e0b', paddingVertical: 16, borderRadius: 50, alignItems: 'center' },
   retryBtnText: { color: '#fff', fontSize: 17, fontWeight: '700' },
 });

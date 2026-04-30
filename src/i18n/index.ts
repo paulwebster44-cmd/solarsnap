@@ -10,7 +10,21 @@ import it from './locales/it';
 import nl from './locales/nl';
 import pl from './locales/pl';
 
-const languageCode = Localization.getLocales()[0]?.languageCode ?? 'en';
+/** The language code detected from the device OS. */
+export const DEVICE_LANGUAGE = Localization.getLocales()[0]?.languageCode ?? 'en';
+
+/** All languages supported by the app. */
+export const SUPPORTED_LANGUAGES = [
+  { code: 'en', label: 'English',    flag: '🇬🇧' },
+  { code: 'de', label: 'Deutsch',    flag: '🇩🇪' },
+  { code: 'es', label: 'Español',    flag: '🇪🇸' },
+  { code: 'fr', label: 'Français',   flag: '🇫🇷' },
+  { code: 'it', label: 'Italiano',   flag: '🇮🇹' },
+  { code: 'nl', label: 'Nederlands', flag: '🇳🇱' },
+  { code: 'pl', label: 'Polski',     flag: '🇵🇱' },
+] as const;
+
+export type SupportedLanguageCode = (typeof SUPPORTED_LANGUAGES)[number]['code'];
 
 i18next.use(initReactI18next).init({
   compatibilityJSON: 'v4',
@@ -23,7 +37,7 @@ i18next.use(initReactI18next).init({
     nl: { translation: nl },
     pl: { translation: pl },
   },
-  lng: languageCode,
+  lng: DEVICE_LANGUAGE,
   fallbackLng: 'en',
   interpolation: { escapeValue: false },
 });

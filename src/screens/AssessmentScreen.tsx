@@ -16,7 +16,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Modal,
   Platform,
   StyleSheet,
@@ -27,7 +26,7 @@ import {
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Location from 'expo-location';
 import { Accelerometer } from 'expo-sensors';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
 import { assessSuitability } from '../services/solar/solarSuitability';
@@ -37,6 +36,7 @@ import { deductCredit } from '../services/auth/authService';
 import { checkBoundary, hasCredits } from '../services/auth/licenceCheck';
 import { useAuth } from '../contexts/AuthContext';
 import { AssessmentScreenNavProp } from '../types/navigation';
+import { COMMERCIAL_ENQUIRY_EMAIL } from '../config/iapConfig';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -50,6 +50,7 @@ function calcTilt(x: number, y: number, z: number): number {
   return Math.min(90, Math.max(0, Math.round(tiltDeg)));
 }
 
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function AssessmentScreen() {
@@ -62,6 +63,13 @@ export default function AssessmentScreen() {
   const [locationGranted, setLocationGranted] = useState(false);
   const [bearing, setBearing] = useState(0);
   const [tilt, setTilt] = useState(0);
+  const [isLandscape, setIsLandscape] = useState(false);
+  const [isFocused, setIsFocused] = useState(true);
+
+  useFocusEffect(useCallback(() => {
+    setIsFocused(true);
+    return () => setIsFocused(false);
+  }, []));
 
   const [loadingStage, setLoadingStage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -98,7 +106,13 @@ export default function AssessmentScreen() {
     if (!locationGranted) return;
     (async () => {
       sub = await Location.watchHeadingAsync((h) => {
-        setBearing(Math.round(h.trueHeading >= 0 ? h.trueHeading : h.magHeading));
+        // Android (at least on some devices) reports the direction the screen
+        // faces rather than the camera, so magHeading is 180° off. iOS
+        // CoreLocation reports correctly, so no correction is needed there.
+        const corrected = Platform.OS === 'android'
+          ? (h.magHeading + 180) % 360
+          : h.magHeading;
+        setBearing(Math.round(corrected));
       });
     })();
     return () => { sub?.remove(); };
@@ -108,7 +122,12 @@ export default function AssessmentScreen() {
 
   useEffect(() => {
     Accelerometer.setUpdateInterval(200);
-    const sub = Accelerometer.addListener(({ x, y, z }) => setTilt(calcTilt(x, y, z)));
+    const sub = Accelerometer.addListener(({ x, y, z }) => {
+      setTilt(calcTilt(x, y, z));
+      // Landscape when |x| clearly exceeds |y| — works even when tilted toward sky.
+      // Threshold of 0.2 adds hysteresis to avoid flickering at the boundary.
+      setIsLandscape(Math.abs(x) > Math.abs(y) + 0.2);
+    });
     return () => sub.remove();
   }, []);
 
@@ -143,6 +162,7 @@ export default function AssessmentScreen() {
         await new Promise((resolve) => setTimeout(resolve, err.estimatedSeconds * 1000));
         obstruction = await analyseSkyPhoto(photoUri);
       } else {
+        console.error('[SkyAnalysis] Failed:', err);
         setLoadingStage(null);
         // Deduct credit even when sky analysis fails — solar result is still valid
         try { await deductCredit(); await refreshProfile(); } catch { /* best-effort */ }
@@ -278,14 +298,6 @@ export default function AssessmentScreen() {
     });
   }, [pendingData, navigation, refreshProfile]);
 
-  // ── Licence modal actions ────────────────────────────────────────────────────
-
-  const handleUpgradePressed = () => {
-    setShowBoundaryModal(false);
-    setShowNoCreditsModal(false);
-    Alert.alert('', t('licence.upgradeComingSoon'));
-  };
-
   // ── Render: permission gates ─────────────────────────────────────────────────
 
   if (!cameraPermission) {
@@ -315,64 +327,71 @@ export default function AssessmentScreen() {
 
   return (
     <View style={s.container}>
-      <CameraView ref={cameraRef} style={s.camera} facing="back">
+      {isFocused && <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />}
 
-        {/* Instruction banner */}
-        <View style={s.instructionBanner}>
-          <Text style={s.instructionText}>{t('assessment.instruction')}</Text>
+      {/* Instruction banner */}
+      <View style={s.instructionBanner}>
+        <Text style={s.instructionText}>{t('assessment.instruction')}</Text>
+      </View>
+
+      {/* Crosshair */}
+      <View style={s.crosshairContainer} pointerEvents="none">
+        <View style={s.crosshairH} />
+        <View style={s.crosshairV} />
+      </View>
+
+      {/* Sensor readings */}
+      <View style={s.readingsContainer}>
+        <View style={s.readingBox}>
+          <Text style={s.readingLabel}>{t('assessment.facing')}</Text>
+          <Text style={s.readingValue}>{bearing}°</Text>
+          <Text style={s.readingUnit}>{bearingToLabel(bearing)}</Text>
         </View>
-
-        {/* Crosshair */}
-        <View style={s.crosshairContainer} pointerEvents="none">
-          <View style={s.crosshairH} />
-          <View style={s.crosshairV} />
+        <View style={s.readingDivider} />
+        <View style={s.readingBox}>
+          <Text style={s.readingLabel}>{t('assessment.tilt')}</Text>
+          <Text style={s.readingValue}>{tilt}°</Text>
+          <Text style={s.readingUnit}>{t('assessment.tiltUnit')}</Text>
         </View>
+      </View>
 
-        {/* Sensor readings */}
-        <View style={s.readingsContainer}>
-          <View style={s.readingBox}>
-            <Text style={s.readingLabel}>{t('assessment.facing')}</Text>
-            <Text style={s.readingValue}>{bearing}°</Text>
-            <Text style={s.readingUnit}>{bearingToLabel(bearing)}</Text>
-          </View>
-          <View style={s.readingDivider} />
-          <View style={s.readingBox}>
-            <Text style={s.readingLabel}>{t('assessment.tilt')}</Text>
-            <Text style={s.readingValue}>{tilt}°</Text>
-            <Text style={s.readingUnit}>{t('assessment.tiltUnit')}</Text>
-          </View>
+      {/* Error */}
+      {errorMessage && (
+        <View style={s.errorBanner}>
+          <Text style={s.errorText}>{errorMessage}</Text>
         </View>
+      )}
 
-        {/* Error */}
-        {errorMessage && (
-          <View style={s.errorBanner}>
-            <Text style={s.errorText}>{errorMessage}</Text>
-          </View>
-        )}
 
-        {/* Loading overlay */}
-        {isLoading && (
-          <View style={s.loadingOverlay}>
-            <ActivityIndicator size="large" color="#f59e0b" />
-            <Text style={s.loadingText}>{loadingStage}</Text>
-          </View>
-        )}
-
-        {/* Assess button */}
-        <View style={s.bottomBar}>
-          <TouchableOpacity
-            style={[s.assessBtn, isLoading && s.assessBtnDisabled]}
-            onPress={handleAssess}
-            disabled={isLoading}
-          >
-            {isLoading
-              ? <ActivityIndicator color="#fff" />
-              : <Text style={s.assessBtnText}>{t('assessment.assess')}</Text>
-            }
-          </TouchableOpacity>
+      {/* Landscape warning */}
+      {isLandscape && (
+        <View style={s.landscapeOverlay}>
+          <Text style={s.landscapeIcon}>↕</Text>
+          <Text style={s.landscapeText}>{t('assessment.holdPortrait')}</Text>
         </View>
+      )}
 
-      </CameraView>
+      {/* Loading overlay */}
+      {isLoading && (
+        <View style={s.loadingOverlay}>
+          <ActivityIndicator size="large" color="#f59e0b" />
+          <Text style={s.loadingText}>{loadingStage}</Text>
+        </View>
+      )}
+
+      {/* Assess button */}
+      <View style={s.bottomBar}>
+        <TouchableOpacity
+          style={[s.assessBtn, (isLoading || isLandscape) && s.assessBtnDisabled]}
+          onPress={handleAssess}
+          disabled={isLoading || isLandscape}
+        >
+          {isLoading
+            ? <ActivityIndicator color="#fff" />
+            : <Text style={s.assessBtnText}>{t('assessment.assess')}</Text>
+          }
+        </TouchableOpacity>
+      </View>
 
       {/* Borderline prompt modal */}
       <Modal visible={showBorderlinePrompt} transparent animationType="slide">
@@ -397,9 +416,7 @@ export default function AssessmentScreen() {
             <Text style={s.modalTitle}>{t('licence.outsideBoundary.title')}</Text>
             <Text style={s.modalBody}>{t('licence.outsideBoundary.description')}</Text>
             <Text style={s.modalNote}>{t('licence.outsideBoundary.distance', { distance: boundaryDistance })}</Text>
-            <TouchableOpacity style={s.modalPrimaryBtn} onPress={handleUpgradePressed}>
-              <Text style={s.modalPrimaryBtnText}>{t('licence.outsideBoundary.upgrade')}</Text>
-            </TouchableOpacity>
+            <Text style={s.modalContactText}>{COMMERCIAL_ENQUIRY_EMAIL}</Text>
             <TouchableOpacity style={s.modalSecondaryBtn} onPress={() => setShowBoundaryModal(false)}>
               <Text style={s.modalSecondaryBtnText}>{t('licence.outsideBoundary.dismiss')}</Text>
             </TouchableOpacity>
@@ -412,12 +429,8 @@ export default function AssessmentScreen() {
         <View style={s.modalOverlay}>
           <View style={s.modalCard}>
             <Text style={s.modalTitle}>{t('licence.noCredits.title')}</Text>
-            <Text style={s.modalBody}>
-              {t('licence.noCredits.description', { total: profile?.credits_remaining ?? 0 })}
-            </Text>
-            <TouchableOpacity style={s.modalPrimaryBtn} onPress={handleUpgradePressed}>
-              <Text style={s.modalPrimaryBtnText}>{t('licence.noCredits.upgrade')}</Text>
-            </TouchableOpacity>
+            <Text style={s.modalBody}>{t('licence.noCredits.description')}</Text>
+            <Text style={s.modalContactText}>{COMMERCIAL_ENQUIRY_EMAIL}</Text>
             <TouchableOpacity style={s.modalSecondaryBtn} onPress={() => setShowNoCreditsModal(false)}>
               <Text style={s.modalSecondaryBtnText}>{t('licence.noCredits.dismiss')}</Text>
             </TouchableOpacity>
@@ -432,7 +445,6 @@ export default function AssessmentScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
-  camera: { flex: 1 },
   centred: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, backgroundColor: '#111' },
   permText: { color: '#fff', textAlign: 'center', marginBottom: 24, fontSize: 16, lineHeight: 24 },
   btn: { backgroundColor: '#f59e0b', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8 },
@@ -462,6 +474,13 @@ const s = StyleSheet.create({
   readingDivider: { width: 1, height: 48, backgroundColor: 'rgba(255,255,255,0.2)', marginHorizontal: 16 },
 
   errorBanner: { backgroundColor: 'rgba(220,38,38,0.85)', margin: 16, padding: 12, borderRadius: 8 },
+  landscapeOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.82)',
+    alignItems: 'center', justifyContent: 'center', padding: 40,
+  },
+  landscapeIcon: { fontSize: 48, color: '#f59e0b', marginBottom: 16 },
+  landscapeText: { color: '#fff', fontSize: 18, fontWeight: '700', textAlign: 'center', lineHeight: 28 },
   errorText: { color: '#fff', textAlign: 'center', fontSize: 14 },
 
   loadingOverlay: {
@@ -485,7 +504,8 @@ const s = StyleSheet.create({
   modalCard: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 28, paddingBottom: Platform.OS === 'ios' ? 44 : 28 },
   modalTitle: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 12 },
   modalBody: { fontSize: 15, color: '#374151', lineHeight: 22, marginBottom: 8 },
-  modalNote: { fontSize: 14, color: '#6b7280', marginBottom: 20 },
+  modalNote: { fontSize: 14, color: '#6b7280', marginBottom: 12 },
+  modalContactText: { fontSize: 14, color: '#f59e0b', fontWeight: '600', marginBottom: 20 },
   modalPrimaryBtn: { backgroundColor: '#f59e0b', paddingVertical: 16, borderRadius: 50, alignItems: 'center', marginBottom: 12 },
   modalPrimaryBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   modalSecondaryBtn: { paddingVertical: 12, alignItems: 'center' },

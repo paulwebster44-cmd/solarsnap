@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import * as Linking from 'expo-linking';
+import { connectToStore, disconnectFromStore } from './src/services/iap/iapService';
+import { loadSavedLanguage } from './src/services/language/languageService';
+import { supabase } from './src/services/auth/supabaseClient';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
@@ -14,6 +18,7 @@ import AssessmentScreen from './src/screens/AssessmentScreen';
 import ResultsScreen from './src/screens/ResultsScreen';
 import SetHomeLocationScreen from './src/screens/SetHomeLocationScreen';
 import AccountScreen from './src/screens/AccountScreen';
+import PremiumResultsScreen from './src/screens/PremiumResultsScreen';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const AppStack = createNativeStackNavigator<AppStackParamList>();
@@ -49,6 +54,7 @@ function AppNavigator() {
       <AppStack.Screen name="Home" component={HomeScreen} />
       <AppStack.Screen name="Assessment" component={AssessmentScreen} />
       <AppStack.Screen name="Results" component={ResultsScreen} />
+      <AppStack.Screen name="PremiumResults" component={PremiumResultsScreen} />
       <AppStack.Screen name="SetHomeLocation" component={SetHomeLocationScreen} />
       <AppStack.Screen name="Account" component={AccountScreen} />
     </AppStack.Navigator>
@@ -56,6 +62,30 @@ function AppNavigator() {
 }
 
 export default function App() {
+  // Connect to the native IAP store once on startup so the purchase listener
+  // is ready before the user ever taps an upgrade button.
+  // Errors are swallowed — store unavailability should not block app launch.
+  useEffect(() => {
+    loadSavedLanguage().catch(console.warn);
+    connectToStore().catch(console.warn);
+
+    // Handle Supabase auth deep links (email verification, password reset)
+    const handleUrl = async (url: string) => {
+      await supabase.auth.exchangeCodeForSession(url).catch(console.warn);
+    };
+
+    // App opened via deep link
+    Linking.getInitialURL().then((url: string | null) => { if (url) handleUrl(url); });
+
+    // Deep link received while app is already running
+    const subscription = Linking.addEventListener('url', ({ url }: { url: string }) => handleUrl(url));
+
+    return () => {
+      subscription.remove();
+      disconnectFromStore().catch(console.warn);
+    };
+  }, []);
+
   return (
     <AuthProvider>
       <NavigationContainer>

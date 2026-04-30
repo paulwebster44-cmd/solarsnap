@@ -25,14 +25,31 @@ export function checkBoundary(
   userLon: number,
   profile: UserProfile,
 ): BoundaryResult {
+  // Commercial licence has no boundary restriction
   if (profile.licence_tier === 'commercial') return { allowed: true };
   if (profile.home_latitude == null || profile.home_longitude == null) return { allowed: true };
+  // (0, 0) is "Null Island" — treat as unset when the DB column defaults to 0 instead of NULL
+  if (profile.home_latitude === 0 && profile.home_longitude === 0) return { allowed: true };
 
   const distance = haversineDistance(userLat, userLon, profile.home_latitude, profile.home_longitude);
   if (distance <= 200) return { allowed: true };
   return { allowed: false, distance: Math.round(distance) };
 }
 
+/**
+ * Returns whether the user may run another assessment.
+ *
+ * Commercial licence has unlimited assessments.
+ * All other tiers (free, basic, premium) share a credit allowance — Basic and
+ * Premium users receive 10 credits on sign-up/purchase; free/anonymous users
+ * receive a smaller trial allowance set in Supabase.
+ */
 export function hasCredits(profile: UserProfile): boolean {
+  if (profile.licence_tier === 'commercial') return true;
   return profile.credits_remaining > 0;
+}
+
+/** Returns true if the user has the Premium tier or a Commercial licence (yield report access). */
+export function hasPremiumTier(profile: UserProfile): boolean {
+  return profile.licence_tier === 'premium' || profile.licence_tier === 'commercial';
 }
