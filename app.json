@@ -3,7 +3,7 @@
     "name": "SolarSnap",
     "slug": "solarsnap",
     "scheme": "solarsnap",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -15,7 +15,7 @@
     },
     "ios": {
       "bundleIdentifier": "co.uk.solarsnap.app",
-      "buildNumber": "4",
+      "buildNumber": "5",
       "supportsTablet": false,
       "infoPlist": {
         "NSCameraUsageDescription": "SolarSnap uses the camera to photograph the sky at your proposed panel location. The photo is analysed to detect shading from buildings and trees.",
