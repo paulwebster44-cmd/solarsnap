@@ -61,11 +61,18 @@ export default function AccountScreen() {
     ? t(`account.tiers.${profile.licence_tier}` as any)
     : t('account.tiers.basic');
 
+  const isCommercial = profile?.licence_tier === 'commercial';
+  const hasHomeLocation =
+    profile?.home_latitude != null &&
+    !(profile.home_latitude === 0 && profile.home_longitude === 0);
+  // Non-commercial users can set their location once but not change it afterwards
+  const canChangeLocation = isCommercial || !hasHomeLocation;
+
   const locationLabel =
-    profile?.home_latitude != null
+    hasHomeLocation
       ? t('account.coordinates', {
-          lat: profile.home_latitude.toFixed(5),
-          lon: profile.home_longitude?.toFixed(5),
+          lat: profile!.home_latitude!.toFixed(5),
+          lon: profile!.home_longitude!.toFixed(5),
         })
       : t('account.notSet');
 
@@ -90,12 +97,18 @@ export default function AccountScreen() {
 
         <View style={s.card}>
           <InfoRow label={t('account.homeLocation')} value={locationLabel} />
-          <TouchableOpacity
-            style={s.changeBtn}
-            onPress={() => navigation.navigate('SetHomeLocation')}
-          >
-            <Text style={s.changeBtnText}>{t('account.changeLocation')}</Text>
-          </TouchableOpacity>
+          {canChangeLocation ? (
+            <TouchableOpacity
+              style={s.changeBtn}
+              onPress={() => navigation.navigate('SetHomeLocation')}
+            >
+              <Text style={s.changeBtnText}>
+                {hasHomeLocation ? t('account.changeLocation') : t('account.setLocation')}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <Text style={s.locationLockedText}>{t('account.locationLocked')}</Text>
+          )}
         </View>
 
         {/* Language picker */}
@@ -203,6 +216,7 @@ const s = StyleSheet.create({
     backgroundColor: '#fef3c7', borderRadius: 8,
   },
   changeBtnText: { color: '#d97706', fontWeight: '600', fontSize: 15 },
+  locationLockedText: { marginTop: 10, fontSize: 13, color: '#9ca3af', textAlign: 'center' },
   restoreBtn: {
     backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb',
     borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginBottom: 12,

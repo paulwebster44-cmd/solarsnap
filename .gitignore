@@ -44,3 +44,6 @@ yarn-error.*
 
 # Claude
 .claude/
+
+# google-service-accounts
+.google-play-service-account.json
